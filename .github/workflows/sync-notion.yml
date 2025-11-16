@@ -1,0 +1,90 @@
+name: Sync Notion to GitHub
+
+on:
+  schedule:
+    # 6시간마다 자동 실행
+    - cron: "0 */6 * * *"
+  workflow_dispatch: # 수동 트리거 가능
+    inputs:
+      skip_commit:
+        description: "커밋 없이 동기화만 실행"
+        required: false
+        default: "false"
+        type: boolean
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 커밋 및 푸시 권한
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.18.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync from Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: pnpm sync-notion
+
+      - name: Configure Git
+        run: |
+          git config user.name "notion-sync-bot"
+          git config user.email "notion-sync-bot@users.noreply.github.com"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add app/blog/posts/ .translation-cache.json
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  변경 사항이 없습니다."
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ 변경 사항이 감지되었습니다."
+            git diff --staged --stat
+          fi
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.has_changes == 'true' && github.event.inputs.skip_commit != 'true'
+        run: |
+          TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
+          CHANGED_FILES=$(git diff --staged --name-only | wc -l)
+          git commit -m "chore: sync blog posts from Notion [${TIMESTAMP}]
+
+          - Changed files: ${CHANGED_FILES}"
+          git push
+
+      - name: Summary
+        if: steps.check_changes.outputs.has_changes == 'false'
+        run: |
+          echo "## ✅ 동기화 완료" >> $GITHUB_STEP_SUMMARY
+          echo "변경 사항이 없습니다. 모든 포스트가 최신 상태입니다." >> $GITHUB_STEP_SUMMARY
+
+      - name: Summary with changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          echo "## ✅ 동기화 완료" >> $GITHUB_STEP_SUMMARY
+          echo "변경 사항이 감지되어 커밋되었습니다." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 변경된 파일:" >> $GITHUB_STEP_SUMMARY
+          git diff --staged --name-only | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+
