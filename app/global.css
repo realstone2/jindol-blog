@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+::selection {
+  background-color: #007aff;
+  color: #ffffff;
+}
+
+:root {
+  /* Apple Design System - Beige/Warm Tone Colors */
+  --apple-blue: #8b7355;
+  --apple-accent: #a0826d;
+  --apple-gray: #8e8e93;
+  --apple-gray-light: #c7c7cc;
+  --apple-gray-dark: #48484a;
+  --apple-bg-light: #f5f1e8;
+  --apple-bg-card-light: #ffffff;
+  --apple-bg-dark: #1d1d1f;
+  --apple-bg-card-dark: #2c2c2e;
+  --apple-text-primary: #3e3028;
+  --apple-text-secondary: #6b5d52;
+  --apple-text-tertiary: #8e8276;
+  --apple-text-primary-light: #000000;
+  --apple-text-secondary-light: #3c3c43;
+  --apple-text-tertiary-light: #8e8e93;
+  --apple-text-primary-dark: #ffffff;
+  --apple-text-secondary-dark: #ebebf5;
+  --apple-text-tertiary-dark: #8e8e93;
+
+  /* Apple Design System - Glassmorphism */
+  --glass-bg-light: rgba(255, 255, 255, 0.72);
+  --glass-bg-dark: rgba(44, 44, 46, 0.72);
+  --glass-border-light: rgba(0, 0, 0, 0.08);
+  --glass-border-dark: rgba(255, 255, 255, 0.12);
+
+  /* Apple Design System - Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  /* Apple Design System - Border Radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
+  /* Apple Design System - Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Syntax Highlighting */
+  --sh-class: #2d5e9d;
+  --sh-identifier: #354150;
+  --sh-sign: #8996a3;
+  --sh-string: #007f7a;
+  --sh-keyword: #e02518;
+  --sh-comment: #a19595;
+  --sh-jsxliterals: #6266d1;
+  --sh-property: #e25a1c;
+  --sh-entity: #e25a1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sh-class: #4c97f8;
+    --sh-identifier: white;
+    --sh-keyword: #f47067;
+    --sh-string: #0fa295;
+  }
+  html {
+    color-scheme: dark;
+  }
+}
+
+html {
+  min-width: 360px;
+}
+
+.prose .anchor {
+  @apply absolute invisible no-underline;
+
+  margin-left: -1em;
+  padding-right: 0.5em;
+  width: 80%;
+  max-width: 700px;
+  cursor: pointer;
+}
+
+.anchor:hover {
+  @apply visible;
+}
+
+.prose a {
+  @apply underline transition-all decoration-neutral-400 dark:decoration-neutral-600 underline-offset-2 decoration-[0.1em];
+}
+
+.prose .anchor:after {
+  @apply text-neutral-300 dark:text-neutral-700;
+  content: "#";
+}
+
+.prose *:hover > .anchor {
+  @apply visible;
+}
+
+.prose pre {
+  @apply overflow-x-auto py-3 px-4 text-sm;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px 0 rgba(139, 99, 76, 0.12),
+    inset 0 1px 0 0 rgba(255, 248, 240, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  .prose pre {
+    background: var(--glass-bg-dark);
+    border: 1px solid var(--glass-border-dark);
+  }
+}
+
+.prose code {
+  @apply px-1 py-0.5;
+  border-radius: var(--radius-sm);
+  background: rgba(139, 115, 85, 0.1);
+  color: #3e3028;
+}
+
+.prose pre code {
+  @apply p-0;
+  border: initial;
+  line-height: 1.5;
+  background: transparent;
+  color: #3e3028;
+}
+
+.prose code span {
+  @apply font-medium;
+}
+
+.prose img {
+  /* Don't apply styles to next/image */
+  @apply m-0;
+}
+
+.prose p {
+  @apply my-4;
+  color: #3e3028;
+}
+
+.prose h1 {
+  @apply text-4xl font-semibold tracking-tight;
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.02em;
+  color: #3e3028;
+}
+
+.prose h2 {
+  @apply text-2xl font-semibold tracking-tight;
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.01em;
+  color: #3e3028;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold tracking-tight;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.01em;
+  color: #3e3028;
+}
+
+.prose h4 {
+  @apply text-lg font-semibold tracking-tight;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  color: #3e3028;
+}
+
+.prose strong {
+  @apply font-medium;
+  color: #3e3028;
+}
+
+.prose ul {
+  @apply list-disc pl-6;
+}
+
+.prose ol {
+  @apply list-decimal pl-6;
+}
+
+.prose li {
+  color: #3e3028;
+}
+
+.prose a {
+  @apply underline transition-all underline-offset-2 decoration-[0.1em];
+  color: #8b7355;
+  text-decoration-color: rgba(139, 115, 85, 0.3);
+}
+
+.prose a:hover {
+  text-decoration-color: #8b7355;
+}
+
+.prose > :first-child {
+  /* Override removing top margin, causing layout shift */
+  margin-top: 1.25em !important;
+  margin-bottom: 1.25em !important;
+}
+
+pre::-webkit-scrollbar {
+  display: none;
+}
+
+pre {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Remove Safari input shadow on mobile */
+input[type="text"],
+input[type="email"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+table {
+  display: block;
+  max-width: fit-content;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.title {
+  text-wrap: balance;
+}
