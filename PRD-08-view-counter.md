@@ -258,3 +258,4 @@ UPSTASH_REDIS_REST_TOKEN=xxx
 **작성일**: 2025-11-16  
 **버전**: 1.0
 
+
