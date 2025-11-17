@@ -125,52 +125,27 @@ export function IpodContainerClient({
         {/* 하단 Footer */}
         <div className="bg-gradient-to-b from-[#f0f0f0] via-[#e8e8e8] to-[#d0d0d0] border-t border-[#b8b8b8] ipod-header-3d">
           <div className="px-5 py-3">
-            <div className="flex items-center gap-2 mb-2">
-              <svg
-                className="w-4 h-4 text-[#666]"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
-              </svg>
-              <span className="text-xs font-semibold text-[#333] tracking-wide uppercase">
-                Links
-              </span>
-            </div>
-
             <div className="flex flex-wrap gap-4 text-xs mb-3">
               <a
                 className="flex items-center gap-1.5 text-[#1a1a1a] hover:text-[#5e9ed6] transition-colors font-semibold"
                 rel="noopener noreferrer"
                 target="_blank"
-                href="/rss"
-              >
-                <span>→</span>
-                <span>RSS</span>
-              </a>
-              <a
-                className="flex items-center gap-1.5 text-[#1a1a1a] hover:text-[#5e9ed6] transition-colors font-semibold"
-                rel="noopener noreferrer"
-                target="_blank"
-                href="https://github.com/vercel/next.js"
+                href="https://github.com/realstone2"
               >
                 <span>→</span>
                 <span>GitHub</span>
               </a>
+
               <a
                 className="flex items-center gap-1.5 text-[#1a1a1a] hover:text-[#5e9ed6] transition-colors font-semibold"
                 rel="noopener noreferrer"
                 target="_blank"
-                href="https://vercel.com/templates/next.js/portfolio-starter-kit"
+                href="https://www.linkedin.com/in/jindol-487b8332a/"
               >
                 <span>→</span>
-                <span>View Source</span>
+                <span>LinkedIn</span>
               </a>
             </div>
-
-            <p className="text-xs text-[#666] font-medium">
-              © {new Date().getFullYear()} MIT Licensed
-            </p>
           </div>
         </div>
       </div>
