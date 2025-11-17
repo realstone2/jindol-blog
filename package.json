@@ -2,7 +2,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/sync-notion.ts",
     "build": "next build",
     "start": "next start",
     "sync-notion": "tsx scripts/sync-notion.ts",
