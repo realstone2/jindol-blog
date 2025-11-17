@@ -1,83 +1,70 @@
 @import "tailwindcss";
 
 ::selection {
-  background-color: #007aff;
+  background-color: #5e9ed6;
   color: #ffffff;
 }
 
 :root {
-  /* Apple Design System - Beige/Warm Tone Colors */
-  --apple-blue: #8b7355;
-  --apple-accent: #a0826d;
-  --apple-gray: #8e8e93;
-  --apple-gray-light: #c7c7cc;
-  --apple-gray-dark: #48484a;
-  --apple-bg-light: #f5f1e8;
-  --apple-bg-card-light: #ffffff;
-  --apple-bg-dark: #1d1d1f;
-  --apple-bg-card-dark: #2c2c2e;
-  --apple-text-primary: #3e3028;
-  --apple-text-secondary: #6b5d52;
-  --apple-text-tertiary: #8e8276;
-  --apple-text-primary-light: #000000;
-  --apple-text-secondary-light: #3c3c43;
-  --apple-text-tertiary-light: #8e8e93;
-  --apple-text-primary-dark: #ffffff;
-  --apple-text-secondary-dark: #ebebf5;
-  --apple-text-tertiary-dark: #8e8e93;
+  /* iPod Classic Design System Colors */
+  --ipod-blue: #5e9ed6;
+  --ipod-blue-dark: #4a8ec4;
+  --ipod-blue-darker: #3d7eb3;
+  --ipod-gray: #666666;
+  --ipod-gray-light: #999999;
+  --ipod-gray-dark: #333333;
+  --ipod-bg: #f0f0f0;
+  --ipod-bg-light: #f8f9fa;
+  --ipod-bg-dark: #e8e8e8;
+  --ipod-border: #d4d4d4;
+  --ipod-border-dark: #b8b8b8;
+  --ipod-text-primary: #1a1a1a;
+  --ipod-text-secondary: #333333;
+  --ipod-text-tertiary: #666666;
 
-  /* Apple Design System - Glassmorphism */
-  --glass-bg-light: rgba(255, 255, 255, 0.72);
-  --glass-bg-dark: rgba(44, 44, 46, 0.72);
-  --glass-border-light: rgba(0, 0, 0, 0.08);
-  --glass-border-dark: rgba(255, 255, 255, 0.12);
+  /* iPod Classic - LCD Screen */
+  --lcd-bg: #ffffff;
+  --lcd-text: #000000;
+  --lcd-border: #d4d4d4;
+  --lcd-header: linear-gradient(to bottom, #f5f5f5, #e8e8e8);
 
-  /* Apple Design System - Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
-
-  /* Apple Design System - Border Radius */
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
-
-  /* Apple Design System - Spacing */
-  --spacing-xs: 8px;
-  --spacing-sm: 12px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 48px;
-
-  /* Syntax Highlighting */
-  --sh-class: #2d5e9d;
-  --sh-identifier: #354150;
-  --sh-sign: #8996a3;
-  --sh-string: #007f7a;
-  --sh-keyword: #e02518;
-  --sh-comment: #a19595;
-  --sh-jsxliterals: #6266d1;
-  --sh-property: #e25a1c;
-  --sh-entity: #e25a1c;
+  /* Syntax Highlighting - iPod 스타일 */
+  --sh-class: #3d7eb3;
+  --sh-identifier: #1a1a1a;
+  --sh-sign: #666666;
+  --sh-string: #2d7a3e;
+  --sh-keyword: #c4314b;
+  --sh-comment: #999999;
+  --sh-jsxliterals: #5e9ed6;
+  --sh-property: #c4314b;
+  --sh-entity: #c4314b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --sh-class: #4c97f8;
-    --sh-identifier: white;
-    --sh-keyword: #f47067;
-    --sh-string: #0fa295;
+    --sh-class: #5e9ed6;
+    --sh-identifier: #e8e8e8;
+    --sh-keyword: #ff6b6b;
+    --sh-string: #51cf66;
   }
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 }
 
 html {
   min-width: 360px;
+  font-family: "SF Pro Display", "Roboto", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+body {
+  font-family: "SF Pro Display", "Roboto", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .prose .anchor {
@@ -108,14 +95,16 @@ html {
 }
 
 .prose pre {
-  @apply overflow-x-auto py-3 px-4 text-sm;
-  background: rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px 0 rgba(139, 99, 76, 0.12),
-    inset 0 1px 0 0 rgba(255, 248, 240, 0.6);
+  @apply overflow-x-auto py-4 px-5 text-sm;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 18px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 4px 20px 0 rgba(139, 99, 76, 0.1),
+    inset 0 1px 0 0 rgba(255, 248, 240, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  margin: 1.5em 0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -126,10 +115,12 @@ html {
 }
 
 .prose code {
-  @apply px-1 py-0.5;
-  border-radius: var(--radius-sm);
-  background: rgba(139, 115, 85, 0.1);
+  @apply px-2 py-1;
+  border-radius: 8px;
+  background: rgba(139, 115, 85, 0.12);
   color: #3e3028;
+  font-size: 0.9em;
+  border: 1px solid rgba(139, 115, 85, 0.15);
 }
 
 .prose pre code {
@@ -150,8 +141,10 @@ html {
 }
 
 .prose p {
-  @apply my-4;
+  @apply my-5 leading-relaxed;
   color: #3e3028;
+  font-size: 1.0625rem;
+  line-height: 1.75;
 }
 
 .prose h1 {
@@ -164,16 +157,18 @@ html {
 
 .prose h2 {
   @apply text-2xl font-semibold tracking-tight;
-  margin-top: var(--spacing-xl);
-  margin-bottom: var(--spacing-md);
+  margin-top: 2.5em;
+  margin-bottom: 1em;
   letter-spacing: -0.01em;
   color: #3e3028;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid rgba(139, 115, 85, 0.15);
 }
 
 .prose h3 {
   @apply text-xl font-semibold tracking-tight;
-  margin-top: var(--spacing-lg);
-  margin-bottom: var(--spacing-sm);
+  margin-top: 2em;
+  margin-bottom: 0.75em;
   letter-spacing: -0.01em;
   color: #3e3028;
 }
@@ -191,11 +186,34 @@ html {
 }
 
 .prose ul {
-  @apply list-disc pl-6;
+  @apply list-none pl-0;
+  margin: 1.5em 0;
+}
+
+.prose ul > li {
+  @apply relative pl-7;
+  color: #3e3028;
+  margin: 0.75em 0;
+  line-height: 1.75;
+}
+
+.prose ul > li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #8b7355;
+  font-weight: bold;
 }
 
 .prose ol {
   @apply list-decimal pl-6;
+  margin: 1.5em 0;
+}
+
+.prose ol > li {
+  color: #3e3028;
+  margin: 0.75em 0;
+  line-height: 1.75;
 }
 
 .prose li {
@@ -203,13 +221,275 @@ html {
 }
 
 .prose a {
-  @apply underline transition-all underline-offset-2 decoration-[0.1em];
+  @apply transition-all underline-offset-2;
   color: #8b7355;
-  text-decoration-color: rgba(139, 115, 85, 0.3);
+  text-decoration: none;
+  background-image: linear-gradient(
+    to right,
+    rgba(139, 115, 85, 0.3),
+    rgba(139, 115, 85, 0.3)
+  );
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  padding-bottom: 2px;
 }
 
 .prose a:hover {
-  text-decoration-color: #8b7355;
+  background-image: linear-gradient(to right, #8b7355, #8b7355);
+  background-size: 100% 2px;
+}
+
+/* iPod Classic 스타일 인용구 */
+.prose blockquote {
+  margin: 1.5em 0;
+  padding: 1.25em 1.5em;
+  border-left: 3px solid #8b7355;
+  background: rgba(139, 115, 85, 0.08);
+  border-radius: 12px;
+  font-style: normal;
+  color: #6b5d52;
+}
+
+.prose blockquote p {
+  margin: 0;
+  color: #6b5d52;
+}
+
+/* iPod Classic 스타일 이미지 */
+.prose img {
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(139, 99, 76, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.3);
+  margin: 2em 0;
+}
+
+/* 구분선 */
+.prose hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(139, 115, 85, 0.3),
+    transparent
+  );
+  margin: 2.5em 0;
+}
+
+/* iPod Classic LCD Screen Typography */
+.prose-ipod {
+  color: #1a1a1a;
+}
+
+.prose-ipod p {
+  margin: 1.25em 0;
+  line-height: 1.7;
+  color: #1a1a1a;
+  font-size: 1rem;
+}
+
+.prose-ipod h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5em;
+}
+
+.prose-ipod h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  letter-spacing: -0.01em;
+  border-bottom: 1px solid #e8e8e8;
+  padding-bottom: 0.4em;
+}
+
+.prose-ipod h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+}
+
+.prose-ipod h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+/* iPod 스타일 리스트 - 화살표 마커 */
+.prose-ipod ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 1.5em 0;
+}
+
+.prose-ipod ul > li {
+  position: relative;
+  padding-left: 1.75em;
+  margin: 0.5em 0;
+  color: #1a1a1a;
+  line-height: 1.7;
+}
+
+.prose-ipod ul > li::before {
+  content: "▶";
+  position: absolute;
+  left: 0;
+  color: #5e9ed6;
+  font-size: 0.75em;
+  top: 0.25em;
+}
+
+.prose-ipod ol {
+  padding-left: 1.75em;
+  margin: 1.5em 0;
+  list-style: decimal;
+}
+
+.prose-ipod ol > li {
+  margin: 0.5em 0;
+  color: #1a1a1a;
+  line-height: 1.7;
+  padding-left: 0.5em;
+}
+
+/* iPod 스타일 링크 */
+.prose-ipod a {
+  color: #4a8ec4;
+  text-decoration: none;
+  border-bottom: 1px solid #a8d0f0;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.prose-ipod a:hover {
+  color: #3d7eb3;
+  border-bottom-color: #4a8ec4;
+  background-color: rgba(94, 158, 214, 0.1);
+}
+
+/* iPod LCD 스타일 코드 블록 */
+.prose-ipod pre {
+  background: #ffffff;
+  border: 2px solid #d4d4d4;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.5em 0;
+  overflow-x: auto;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.prose-ipod pre code {
+  background: transparent;
+  padding: 0;
+  border: none;
+  color: #1a1a1a;
+  font-size: 0.875rem;
+}
+
+.prose-ipod code {
+  background: #e8e8e8;
+  color: #1a1a1a;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.875em;
+  border: 1px solid #d0d0d0;
+  font-weight: 500;
+}
+
+/* iPod 스타일 인용구 */
+.prose-ipod blockquote {
+  margin: 1.5em 0;
+  padding: 1em 1.25em;
+  border-left: 4px solid #5e9ed6;
+  background: #f0f4f8;
+  border-radius: 0 8px 8px 0;
+  color: #333;
+  font-style: normal;
+}
+
+.prose-ipod blockquote p {
+  margin: 0;
+  color: #333;
+}
+
+/* iPod 앨범 커버 스타일 이미지 */
+.prose-ipod img {
+  border-radius: 12px;
+  border: 2px solid #d4d4d4;
+  margin: 2em auto;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* iPod 스타일 구분선 */
+.prose-ipod hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #d4d4d4,
+    #d4d4d4,
+    #d4d4d4,
+    transparent
+  );
+  margin: 2.5em 0;
+}
+
+/* iPod LCD 스타일 테이블 */
+.prose-ipod table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5em 0;
+  background: #ffffff;
+  border: 2px solid #d4d4d4;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.prose-ipod table thead {
+  background: linear-gradient(to bottom, #f5f5f5, #e8e8e8);
+}
+
+.prose-ipod table th {
+  padding: 0.75em 1em;
+  text-align: left;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-bottom: 2px solid #d4d4d4;
+  font-size: 0.9375rem;
+}
+
+.prose-ipod table td {
+  padding: 0.75em 1em;
+  color: #1a1a1a;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.prose-ipod table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.prose-ipod table tbody tr:hover {
+  background: rgba(94, 158, 214, 0.08);
+}
+
+.prose-ipod strong {
+  font-weight: 700;
+  color: #000;
 }
 
 .prose > :first-child {
@@ -242,6 +522,87 @@ table {
   white-space: nowrap;
 }
 
+/* iPod Classic 스타일 테이블 */
+.prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5em 0;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(139, 99, 76, 0.1);
+}
+
+.prose table thead {
+  background: rgba(139, 115, 85, 0.15);
+}
+
+.prose table th {
+  padding: 0.875em 1em;
+  text-align: left;
+  font-weight: 600;
+  color: #3e3028;
+  border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+  font-size: 0.9375rem;
+}
+
+.prose table td {
+  padding: 0.875em 1em;
+  color: #3e3028;
+  border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+}
+
+.prose table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.prose table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.prose table tbody tr:hover {
+  background: rgba(139, 115, 85, 0.05);
+}
+
 .title {
   text-wrap: balance;
+}
+
+/* iPod Classic 3D 효과 - 일반 클래스 */
+.ipod-3d-effect {
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* iPod Classic 3D 효과 - 호버 상태 (일반 적용) */
+.ipod-3d-hover:hover,
+.group:hover.ipod-3d-hover,
+a:hover.ipod-3d-hover,
+button:hover.ipod-3d-hover {
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* iPod Classic 3D 효과 - 활성/선택 상태 */
+.ipod-3d-active {
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 헤더용 3D 효과 */
+.ipod-header-3d {
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* 타이틀 영역용 3D 효과 (어두운 배경) */
+.ipod-title-3d {
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.1);
 }
