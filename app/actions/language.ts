@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
  */
 export async function setLanguageCookie(lang: "ko" | "en") {
   const cookieStore = await cookies();
-  
+
   // NEXT_LOCALE 쿠키에 언어 설정 저장
   cookieStore.set("NEXT_LOCALE", lang, {
     maxAge: 31536000, // 1년 (60 * 60 * 24 * 365)
@@ -16,5 +16,3 @@ export async function setLanguageCookie(lang: "ko" | "en") {
     sameSite: "lax",
   });
 }
-
-
