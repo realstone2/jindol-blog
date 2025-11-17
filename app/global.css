@@ -150,9 +150,9 @@ html {
   color: #3e3028;
 }
 
-/* 코드 블록 내부의 모든 요소 */
+/* 코드 블록 내부의 모든 요소 - sugar-high 스타일 유지 */
 .prose pre code * {
-  color: inherit !important;
+  color: inherit;
 }
 
 .prose code span {
