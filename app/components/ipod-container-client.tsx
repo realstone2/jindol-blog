@@ -51,11 +51,6 @@ export function IpodContainerClient({
   const navItems = [
     { path: "/", name: "Home" },
     { path: "/blog", name: "Blog" },
-    {
-      path: "https://vercel.com/templates/next.js/portfolio-starter-kit",
-      name: "Deploy",
-      external: true,
-    },
   ];
 
   // 스크롤 프로그레스 감지
@@ -97,19 +92,14 @@ export function IpodContainerClient({
             {/* 왼쪽: 네비게이션 링크 */}
             <div className="flex items-center gap-3">
               {navItems.map((item) => {
-                const isActive =
-                  !item.external && isActivePath(pathname || currentPath, item.path);
-                const LinkComponent = item.external ? "a" : Link;
-                const linkProps = item.external
-                  ? {
-                      href: item.path,
-                      target: "_blank",
-                      rel: "noopener noreferrer",
-                    }
-                  : { href: item.path };
+                const isActive = isActivePath(
+                  pathname || currentPath,
+                  item.path
+                );
+                const linkProps = { href: item.path };
 
                 return (
-                  <LinkComponent
+                  <Link
                     key={item.path}
                     {...linkProps}
                     className={`text-xs font-semibold tracking-wide uppercase transition-colors ${
@@ -119,18 +109,13 @@ export function IpodContainerClient({
                     }`}
                   >
                     {item.name}
-                  </LinkComponent>
+                  </Link>
                 );
               })}
             </div>
 
             {/* 오른쪽: 페이지명과 언어 변환 */}
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-[#333] tracking-wide uppercase">
-                {pageName}
-              </span>
-              {languageSwitcher}
-            </div>
+            <div className="flex items-center gap-3">{languageSwitcher}</div>
           </div>
         </div>
 
@@ -238,4 +223,3 @@ export function IpodContainerClient({
     </>
   );
 }
-
