@@ -88,3 +88,4 @@ jobs:
           echo "### 변경된 파일:" >> $GITHUB_STEP_SUMMARY
           git diff --staged --name-only | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
 
+
