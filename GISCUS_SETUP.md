@@ -33,24 +33,29 @@
 2. 아래 정보를 입력:
 
 ### 저장소 정보
+
 ```
 username/repository-name
 예: yeojinseok/jindol-blog
 ```
 
 ### 매핑 방식
+
 - **pathname** 선택 (권장)
   - 각 페이지 URL 경로에 따라 댓글이 매핑됩니다
 
 ### Discussion 카테고리
+
 - **Announcements** 선택 (권장)
   - 새 댓글이 자동으로 Discussion으로 생성됩니다
 
 ### 테마
+
 - **light** 선택
   - Apple Glass UI 디자인과 조화를 이룹니다
 
 ### 언어
+
 - 한국어(ko) 또는 영어(en)
   - 블로그에서 자동으로 언어를 전환합니다
 
@@ -84,21 +89,22 @@ NEXT_PUBLIC_GISCUS_CATEGORY_ID=DIC_kwDOxxxxxxx
 Giscus 설정을 완료하면 아래와 같은 스크립트가 생성됩니다:
 
 ```html
-<script src="https://giscus.app/client.js"
-        data-repo="your-username/your-repo"
-        data-repo-id="R_kgDOxxxxxxx"
-        data-category="Announcements"
-        data-category-id="DIC_kwDOxxxxxxx"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="ko"
-        crossorigin="anonymous"
-        async>
-</script>
+<script
+  src="https://giscus.app/client.js"
+  data-repo="your-username/your-repo"
+  data-repo-id="R_kgDOxxxxxxx"
+  data-category="Announcements"
+  data-category-id="DIC_kwDOxxxxxxx"
+  data-mapping="pathname"
+  data-strict="0"
+  data-reactions-enabled="1"
+  data-emit-metadata="0"
+  data-input-position="top"
+  data-theme="light"
+  data-lang="ko"
+  crossorigin="anonymous"
+  async
+></script>
 ```
 
 이 값들을 환경변수에 입력하면 됩니다.
@@ -108,6 +114,7 @@ Giscus 설정을 완료하면 아래와 같은 스크립트가 생성됩니다:
 ## ✅ 테스트
 
 1. 환경변수 설정 후 개발 서버 재시작:
+
    ```bash
    pnpm dev
    ```
@@ -185,5 +192,3 @@ GitHub Discussions에 새 댓글이 작성되면:
 
 **작성일**: 2025-11-16  
 **최종 수정**: 2025-11-16
-
-
