@@ -77,7 +77,7 @@ async function fetchPublishedPages(): Promise<NotionPage[]> {
       // Status 필터 제거 - 모든 페이지 가져오기
       sorts: [
         {
-          property: "createDate",
+          property: "date",
           direction: "descending",
         },
       ],
@@ -86,26 +86,43 @@ async function fetchPublishedPages(): Promise<NotionPage[]> {
     console.log(`✅ ${response.results.length}개의 페이지를 가져왔습니다.`);
     return response.results as NotionPage[];
   } catch (error) {
-    // createDate 정렬 실패 시 created_time으로 정렬 시도
+    // date 정렬 실패 시 createDate로 시도
     try {
-      console.log("⚠️  createDate 정렬 실패, 기본 정렬로 시도...");
+      console.log("⚠️  date 정렬 실패, createDate로 시도...");
       const response = await notion.databases.query({
         database_id: NOTION_DATABASE_ID,
+        sorts: [
+          {
+            property: "createDate",
+            direction: "descending",
+          },
+        ],
       });
 
-      // created_time 기준으로 정렬
-      const sorted = (response.results as NotionPage[]).sort((a, b) => {
-        return (
-          new Date(b.created_time).getTime() -
-          new Date(a.created_time).getTime()
-        );
-      });
-
-      console.log(`✅ ${sorted.length}개의 페이지를 가져왔습니다.`);
-      return sorted;
+      console.log(`✅ ${response.results.length}개의 페이지를 가져왔습니다.`);
+      return response.results as NotionPage[];
     } catch (fallbackError) {
-      console.error("❌ 노션 페이지를 가져오는 중 에러 발생:", fallbackError);
-      throw fallbackError;
+      // createDate도 실패 시 created_time으로 정렬 시도
+      try {
+        console.log("⚠️  createDate 정렬 실패, 기본 정렬로 시도...");
+        const response = await notion.databases.query({
+          database_id: NOTION_DATABASE_ID,
+        });
+
+        // created_time 기준으로 정렬
+        const sorted = (response.results as NotionPage[]).sort((a, b) => {
+          return (
+            new Date(b.created_time).getTime() -
+            new Date(a.created_time).getTime()
+          );
+        });
+
+        console.log(`✅ ${sorted.length}개의 페이지를 가져왔습니다.`);
+        return sorted;
+      } catch (finalError) {
+        console.error("❌ 노션 페이지를 가져오는 중 에러 발생:", finalError);
+        throw finalError;
+      }
     }
   }
 }

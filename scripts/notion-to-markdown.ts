@@ -42,13 +42,15 @@ export function extractMetadata(page: NotionPage): PageMetadata {
     properties.Name?.title?.[0]?.plain_text ||
     "Untitled";
 
-  // 생성일 추출 (createDate 컬럼)
+  // 생성일 추출 (date 컬럼 우선, 그 다음 createDate 컬럼)
   const publishedAt =
+    properties.date?.date?.start ||
+    properties["date"]?.date?.start ||
+    properties["Date"]?.date?.start ||
     properties.createDate?.date?.start ||
     properties["createDate"]?.date?.start ||
     properties["Create Date"]?.date?.start ||
     properties["Published Date"]?.date?.start ||
-    properties.Date?.date?.start ||
     page.created_time.split("T")[0];
 
   // 요약 추출 (없으므로 빈 문자열)
