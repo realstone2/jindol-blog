@@ -5,7 +5,7 @@ export function BlogPosts({ lang = "ko" }: { lang?: "ko" | "en" }) {
   let allBlogs = getBlogPosts(lang);
 
   return (
-    <div className="space-y-4">
+    <div>
       {allBlogs
         .sort((a, b) => {
           if (
@@ -15,24 +15,48 @@ export function BlogPosts({ lang = "ko" }: { lang?: "ko" | "en" }) {
           }
           return 1;
         })
-        .map((post) => (
+        .map((post, index) => (
           <Link
             key={post.slug}
-            className="group block p-6 rounded-2xl backdrop-blur-2xl bg-white/25 border border-white/20 hover:bg-white/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-out"
-            style={{
-              boxShadow:
-                "0 8px 32px 0 rgba(139, 99, 76, 0.12), inset 0 1px 0 0 rgba(255, 248, 240, 0.6)",
-            }}
+            className="group flex items-center gap-4 px-5 py-3.5 border-b border-[#e8e8e8] last:border-b-0 hover:bg-gradient-to-b hover:from-[#6ba8e0] hover:via-[#5e9ed6] hover:to-[#3d7eb3] transition-all ipod-3d-hover"
             href={`/blog/${post.slug}?lang=${lang}`}
           >
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-              <p className="text-sm font-medium text-[#8E8276] tabular-nums">
-                {formatDate(post.metadata.publishedAt, false)}
-              </p>
-              <p className="text-lg font-semibold text-[#3E3028] tracking-tight group-hover:text-[#8B7355] transition-colors">
+            {/* 트랙 번호 */}
+            <span className="text-xs font-bold text-[#999] group-hover:text-white w-6 text-right tabular-nums flex-shrink-0">
+              {(index + 1).toString().padStart(2, "0")}
+            </span>
+
+            {/* 재생 아이콘 */}
+            <span className="text-[#5e9ed6] group-hover:text-white font-bold text-sm flex-shrink-0">
+              ▶
+            </span>
+
+            {/* 제목 */}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-[#1a1a1a] group-hover:text-white text-sm tracking-tight truncate">
                 {post.metadata.title}
               </p>
             </div>
+
+            {/* 재생시간 (날짜) */}
+            <time className="text-xs font-medium text-[#666] group-hover:text-white/80 tabular-nums flex-shrink-0">
+              {formatDate(post.metadata.publishedAt, false)}
+            </time>
+
+            {/* 화살표 */}
+            <svg
+              className="w-4 h-4 text-[#999] group-hover:text-white flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </Link>
         ))}
     </div>

@@ -35,7 +35,7 @@ export function Comments({ lang }: CommentsProps) {
         inputPosition="top"
         theme="light"
         lang={giscusLang}
-        loading="lazy"
+        loading="eager"
       />
     </div>
   );
