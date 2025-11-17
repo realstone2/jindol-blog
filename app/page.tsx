@@ -1,6 +1,7 @@
 import { BlogPosts } from "app/components/posts";
 import { getUserLanguage } from "app/lib/language";
 import { getTranslations } from "next-intl/server";
+import { IpodContainer } from "app/components/ipod-container";
 
 export default async function Page({
   searchParams,
@@ -10,21 +11,29 @@ export default async function Page({
   const params = await searchParams;
   const lang = await getUserLanguage(params);
 
-  // next-intl의 getTranslations 사용 - 매번 import할 필요 없음!
-  // locale을 전달하면 i18n.ts 설정을 기반으로 자동으로 messages를 가져옴
   const t = await getTranslations({ locale: lang, namespace: "home" });
 
   return (
-    <section>
-      <h1 className="mb-8 text-3xl font-bold tracking-tight bg-gradient-to-r from-[#3E3028] to-[#6B5D52] bg-clip-text text-transparent">
-        {t("title")}
-      </h1>
-      <p className="mb-4 text-base leading-relaxed text-[#6B5D52]">
-        {t("description")}
-      </p>
-      <div className="my-12">
+    <IpodContainer>
+      {/* 타이틀 영역 - 파란색 그라데이션 (3D 효과) */}
+      <div className="bg-gradient-to-b from-[#6ba8e0] via-[#5e9ed6] to-[#3d7eb3] px-6 py-4 border-b border-[#2a2a2a] flex-shrink-0 ipod-title-3d">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+            📝 {lang === "ko" ? "최근 게시글" : "Recent Posts"}
+          </h1>
+          <span className="text-xs text-white/80 font-medium">Playlist</span>
+        </div>
+      </div>
+
+      {/* 플레이리스트 - 게시글 목록 (스크롤 가능) */}
+      <div className="bg-[#f8f9fa] flex-1 overflow-auto">
         <BlogPosts lang={lang} />
       </div>
-    </section>
+
+      {/* 설명 영역 */}
+      <div className="bg-[#f8f9fa] px-6 py-4 border-t border-[#e0e0e0] text-sm text-[#666] flex-shrink-0">
+        {t("description")}
+      </div>
+    </IpodContainer>
   );
 }
