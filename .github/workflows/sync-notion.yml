@@ -1,15 +1,15 @@
 name: Sync Notion to GitHub
 
 on:
-  schedule:
-    # 6시간마다 자동 실행
-    - cron: "0 */6 * * *"
+  # schedule:
+  #   # 6시간마다 자동 실행
+  #   - cron: "0 */6 * * *"
   workflow_dispatch: # 수동 트리거 가능
     inputs:
       skip_commit:
         description: "커밋 없이 동기화만 실행"
         required: false
-        default: "false"
+        default: false
         type: boolean
 
 jobs:
@@ -87,6 +87,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 변경된 파일:" >> $GITHUB_STEP_SUMMARY
           git diff --staged --name-only | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
-
-
-
