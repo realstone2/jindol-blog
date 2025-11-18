@@ -60,6 +60,44 @@ const notion = new Client({
 });
 
 /**
+ * 기존 MDX 파일 목록 가져오기
+ * ko와 en 디렉토리에서 파일명(slug) 목록을 반환
+ */
+async function getExistingSlugs(postsDir: string): Promise<Set<string>> {
+  const existingSlugs = new Set<string>();
+  const koDir = join(postsDir, "ko");
+  const enDir = join(postsDir, "en");
+
+  try {
+    // 한국어 디렉토리에서 파일 목록 가져오기
+    if (existsSync(koDir)) {
+      const koFiles = await readdir(koDir);
+      koFiles
+        .filter((file) => file.endsWith(".mdx"))
+        .forEach((file) => {
+          const slug = file.replace(/\.mdx$/, "");
+          existingSlugs.add(slug);
+        });
+    }
+
+    // 영어 디렉토리에서 파일 목록 가져오기
+    if (existsSync(enDir)) {
+      const enFiles = await readdir(enDir);
+      enFiles
+        .filter((file) => file.endsWith(".mdx"))
+        .forEach((file) => {
+          const slug = file.replace(/\.mdx$/, "");
+          existingSlugs.add(slug);
+        });
+    }
+  } catch (error) {
+    console.warn("⚠️  기존 파일 목록을 가져오는 중 에러 발생:", error);
+  }
+
+  return existingSlugs;
+}
+
+/**
  * 노션 데이터베이스에서 모든 페이지 가져오기
  * (Status 필터 없이 모든 페이지를 가져옴)
  */
@@ -199,6 +237,12 @@ async function syncNotion() {
     // 디렉토리 생성 (없는 경우)
     await mkdir(postsDir, { recursive: true });
 
+    // 기존 파일 목록 가져오기
+    const existingSlugs = await getExistingSlugs(postsDir);
+    if (existingSlugs.size > 0) {
+      console.log(`📋 기존 파일 ${existingSlugs.size}개를 확인했습니다.`);
+    }
+
     // Published 페이지 가져오기
     const pages = await fetchPublishedPages();
 
@@ -210,12 +254,30 @@ async function syncNotion() {
     console.log("\n📝 페이지를 MDX로 변환하는 중...\n");
 
     // 각 페이지를 MDX로 변환하여 저장
+    let processedCount = 0;
+    let skippedCount = 0;
+
     for (const page of pages) {
+      // 메타데이터 추출하여 slug 확인
+      const metadata = extractMetadata(page);
+      const slug = metadata.slug;
+
+      // 이미 존재하는 ID인지 확인
+      if (existingSlugs.has(slug)) {
+        console.log(`  ⏭️  건너뜀: ${metadata.title} (${slug}) - 이미 존재함`);
+        skippedCount++;
+        continue;
+      }
+
+      // 새 페이지 처리
       await savePageAsMDX(page, postsDir);
+      processedCount++;
     }
 
     console.log("\n✨ 노션 동기화 완료!");
-    console.log(`📊 총 ${pages.length}개의 페이지를 동기화했습니다.`);
+    console.log(`📊 총 ${pages.length}개의 페이지 중:`);
+    console.log(`   - 새로 처리: ${processedCount}개`);
+    console.log(`   - 건너뜀: ${skippedCount}개`);
 
     if (GEMINI_API_KEY) {
       console.log(`🌐 각 페이지는 한국어와 영어 버전으로 생성되었습니다.`);
