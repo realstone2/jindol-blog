@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface IpodContainerClientProps {
   children: React.ReactNode;
@@ -46,36 +46,71 @@ export function IpodContainerClient({
 }: IpodContainerClientProps) {
   const pathname = usePathname();
   const pageName = getPageName(pathname || currentPath);
-  const [progress, setProgress] = useState(0);
+
+  // GPU 가속을 위한 ref
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const progressHandleRef = useRef<HTMLDivElement>(null);
+  const timeDisplayRef = useRef<HTMLSpanElement>(null);
 
   const navItems = [
     { path: "/", name: "Home" },
     { path: "/blog", name: "Blog" },
   ];
 
-  // 스크롤 프로그레스 감지
+  // 스크롤 프로그레스 감지 (GPU 가속, state 없음)
   useEffect(() => {
+    let rafId: number | null = null;
+    let ticking = false;
+
     const updateProgress = () => {
       const scrollHeight =
         document.documentElement.scrollHeight - window.innerHeight;
       const scrolled = window.scrollY;
-      const progress = scrollHeight > 0 ? (scrolled / scrollHeight) * 100 : 0;
-      setProgress(Math.min(progress, 100));
+      const progress = scrollHeight > 0 ? scrolled / scrollHeight : 0;
+      const clampedProgress = Math.min(progress, 1);
+
+      // 프로그레스 바: transform scaleX 사용 (GPU 가속)
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${clampedProgress})`;
+      }
+
+      // 핸들: transform translateX 사용 (GPU 가속)
+      if (progressHandleRef.current && progressBarRef.current?.parentElement) {
+        const containerWidth = progressBarRef.current.parentElement.offsetWidth;
+        const handlePosition = clampedProgress * containerWidth - 6; // 핸들 중심을 맞추기 위해 6px 빼기
+        progressHandleRef.current.style.transform = `translateX(${handlePosition}px) translateY(-50%)`;
+      }
+
+      // 시간 표시 업데이트
+      if (timeDisplayRef.current) {
+        const totalSeconds = 300; // 5분 = 300초
+        const currentSeconds = Math.floor(clampedProgress * totalSeconds);
+        const minutes = Math.floor(currentSeconds / 60);
+        const seconds = currentSeconds % 60;
+        const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+        timeDisplayRef.current.textContent = timeString;
+      }
+
+      ticking = false;
     };
 
-    window.addEventListener("scroll", updateProgress);
-    updateProgress();
+    const handleScroll = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(updateProgress);
+        ticking = true;
+      }
+    };
 
-    return () => window.removeEventListener("scroll", updateProgress);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    updateProgress(); // 초기값 설정
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
-
-  // 진행률을 시간으로 변환 (0:00 ~ 5:00 형태)
-  const totalSeconds = 300; // 5분 = 300초
-  const currentSeconds = Math.floor((progress / 100) * totalSeconds);
-  const minutes = Math.floor(currentSeconds / 60);
-  const seconds = currentSeconds % 60;
-  const currentTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  const totalTime = "5:00";
 
   return (
     <>
@@ -173,24 +208,31 @@ export function IpodContainerClient({
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs font-medium text-[#666] tabular-nums">
-              <span>{currentTime}</span>
+              <span ref={timeDisplayRef}>0:00</span>
               <span className="text-[#999]">/</span>
-              <span>{totalTime}</span>
+              <span>5:00</span>
             </div>
           </div>
 
           {/* 재생 바 */}
           <div className="relative h-2 bg-[#e8e8e8] rounded-full overflow-hidden">
-            {/* 진행률 바 */}
+            {/* 진행률 바 - GPU 가속 (transform scaleX) */}
             <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#5e9ed6] to-[#4a8ec4] transition-all duration-150"
-              style={{ width: `${progress}%` }}
+              ref={progressBarRef}
+              className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-[#5e9ed6] to-[#4a8ec4] scroll-progress-bar"
+              style={{
+                transform: "scaleX(0)",
+                transformOrigin: "left",
+              }}
             />
 
-            {/* 진행 핸들 */}
+            {/* 진행 핸들 - GPU 가속 (transform translateX) */}
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-[#5e9ed6] rounded-full shadow-sm transition-all duration-150"
-              style={{ left: `calc(${progress}% - 6px)` }}
+              ref={progressHandleRef}
+              className="absolute top-1/2 w-3 h-3 bg-white border-2 border-[#5e9ed6] rounded-full shadow-sm scroll-progress-handle"
+              style={{
+                transform: "translateX(-6px) translateY(-50%)",
+              }}
             />
           </div>
         </div>

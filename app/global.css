@@ -261,3 +261,20 @@ table {
 .title {
   text-wrap: balance;
 }
+
+/* 스크롤 프로그레스 - GPU 가속 최적화 */
+.scroll-progress-bar {
+  /* GPU 레이어 강제 생성 */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* transform은 GPU에서 처리되어 매우 부드러움 */
+}
+
+.scroll-progress-handle {
+  /* GPU 레이어 강제 생성 */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* transform은 GPU에서 처리되어 매우 부드러움 */
+}
