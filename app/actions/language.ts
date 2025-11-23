@@ -17,3 +17,4 @@ export async function setLanguageCookie(lang: "ko" | "en") {
   });
 }
 
+
