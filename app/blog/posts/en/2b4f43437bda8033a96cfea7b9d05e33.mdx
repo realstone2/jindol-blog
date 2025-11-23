@@ -1,5 +1,5 @@
 ---
-title: "I Finally Created My Personal Blog"
+title: "I Finally Created My Personal Blog."
 publishedAt: "2025-11-23"
 summary: ""
 language: "en"
@@ -8,15 +8,15 @@ tags: []
 
 I, Yeojindol, have finally created my personal blog.
 
-My acquaintances and I had planned to create a blog, but due to lack of time, it kept getting postponed. I've finally gotten around to it. (To be honest, I had somewhat forgotten about it...)
+I had planned to create a blog with some acquaintances, but due to lack of time, it kept getting postponed. I finally got around to working on it. (To be honest, I had somewhat forgotten about it...)
 
 I've written about the process in a very light, diary-like fashion.
 
 ## Getting Started
 
-I was at a loss as to where to begin, but Chan-gyu shared a [template](https://github.com/vercel/examples/tree/main/solutions/blog) with me.
+I was at a loss as to where to begin, but Changyu shared a [template](https://github.com/vercel/examples/tree/main/solutions/blog) with me.
 
-Basic elements like OG tags and sitemaps were well-implemented, so it was mostly a matter of just focusing on the design. Others mentioned they completed their blogs in just a few hours using this template with 'vibe coding,' so I started with a light heart.
+Basic elements like OG tags and sitemaps were well-implemented, so it was mostly a matter of just designing. Others mentioned that they completed their blogs in just a few hours using this template with 'vibe coding,' so I started with a light heart.
 
 ## Design
 
@@ -24,29 +24,29 @@ I've always liked the iPod Classic.
 
 So, I spent a lot of time creating a design guide `md` file with Claude.
 
-I created the design guide file through extensive discussions, referencing iPod photos on Google and discussing curved gradients, among other things.
+I created the design guide file through many conversations, referencing iPod photos and curved gradients found on Google.
 
-While not entirely satisfied, it turned out quite well, achieving the desired feel...
+While not entirely satisfied, it was completed well, achieving the desired feel...
 
 ## CMS
 
-When discussing how to create the blog with my acquaintances, this workflow emerged from our deliberations on how to manage blog posts.
+This is the workflow that emerged from discussions with acquaintances about how to build the blog and how to manage blog posts.
 
 ![image.png](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/31f2b036.webp)
 
-It's a workflow where posts are easily written in Notion and then `md` files are uploaded to GitHub.
+It's a workflow where I easily write posts using Notion and then upload the `md` files to GitHub.
 
 ### Image Handling
 
-A point to note is that Notion images have an expiration time, so images must either be saved locally or uploaded separately to S3 for use.
+A point to note is that Notion images have an expiration time, so you need to save images locally or upload them separately to S3 for use.
 
-Saving images locally can increase the bundle size, so I opted to use S3.
+Saving images locally can increase bundle size, so I used S3.
 
 ### Multilingual Support
 
-I aimed to translate Notion posts using the Gemini API and provide an English version alongside the original.
+I aimed to translate Notion posts using the Gemini API and provide an English version alongside them.
 
-I asked for the API prompt to be created with 'vibe coding.' I'm satisfied with it.
+I asked for an API prompt to be created using 'vibe coding.' I'm satisfied with it.
 
 ```typescript
 function createTranslationPrompt(content: string): string {
@@ -85,7 +85,7 @@ TRANSLATED ENGLISH CONTENT:`;
 
 For other basic content, I handled translation using `intl` libraries.
 
-The user's language is handled so that a default value can be stored and modified in a `cookie`.
+The user's language is handled so that its default value can be stored and modified in a `cookie`.
 
 ## Satisfying Design
 
@@ -93,7 +93,22 @@ This is a design I've wanted to incorporate since I first thought about creating
 
 ![%E1%84%92%E1%85%AA%E1%84%86%E1%85%A7%E1%86%AB_%E1%84%80%E1%85%B5%E1%84%85%E1%85%A9%E1%86%A8_2025-11-23_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_10.58.52.gif](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/b75fcf16.webp)
 
+## Vibe Coding Review
+
+Since the content I wanted to implement was clear, the PRD structure and development flow proceeded without difficulty.
+
+However, the design often felt ambiguous, leading me to spend the most time on implementation, sometimes implementing things directly myself.
+
+Still, about a year ago, I couldn't have imagined setting things up this quickly with 'vibe coding.' The rapidly advancing AI is quite frightening.
+
+I'm trying my best to utilize it well, and this time too, I think I had fun building the blog with AI. (Though the design part was a bit frustrating.)
+
+(The PRD and guide `md` files created during this collaborative development)
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/8aafe375.webp)
+
 ## TODO..
 
 1.  Add Redis operations for page views, visits, etc.
-2.  Design improvements
+2.  Improve design
+3.  Support GIF on S3
