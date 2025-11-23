@@ -1,15 +1,10 @@
 ---
-title: "JavaScript Event Loop"
-publishedAt: "2025-02-01"
+title: "event loop"
+publishedAt: "2024-02-03"
 summary: ""
 language: "ko"
 tags: []
 ---
-
-
-안녕하세요. 프론트 개발자 진돌입니다.
-
-처음 자바스크립트를 접하였을 때, 이해하기 어려웠던 내용이 있었습니다.
 
 
 자바스크립트는 싱글 스레드 언어이며, 비동기 함수로 작업을 처리하여 오래걸리는 작업의 블로킹 현상을 막을 수 있습니다.
@@ -229,153 +224,6 @@ MicroTask Queue도 Task Queue와 동일하게 동작을 하게 됩니다.
 
 > 주의해야할 점은 렌더링보다 우선순위에 있는 작업이라 microtask Queue에 작업 자체가 너무 많이 쌓이게 되면 렌더링 자체가 멈추는 현상이 생길 수 있습니다.
 
-## React를 통해서 살펴보기
-
-
-React 개발자에게 친숙한 React 코드를 통해서 이벤트 루프 동작을 살펴보겠습니다.
-
-
-### 문제 코드
-
-
-다음 코드는 x축으로 스크롤되는 리스트와, 리스트에 아이템을 추가하고 추가된 아이템으로 scroll 해주는 button으로 구성되어 있습니다.
-
-
-```javascript
-const [listData, setListData] = React.useState(data);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  const handleAddItem = () => {
-    setListData((prev) => [...prev, item]);
-
-    containerRef.current?.scrollTo({
-   	  left: ref.current?.scrollWidth,
-      behavior: "smooth",
-    });
-  };
-
-
-  return (
-      <>
-        <div
-          ref={containerRef}
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-            width: "100%",
-            overflowX: "scroll",
-          }}
-        >
-          {listData.map((item) => (
-            <div
-              key={item}
-              style={{
-                backgroundColor: "tomato",
-                width: 300,
-                height: 300,
-              }}
-            >
-              <div style={{ width: 300 }}>{item}</div>
-            </div>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={handleAddItem}
-        >
-         +
-        </button>
-      </>
-  );
-```
-
-
-![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/a9c98de2-aea1-4d51-8eb3-f399a0406268/image.gif)
-
-
-해당 코드는 의도대로 동작하지 않습니다.
-왜 동작안하는걸까요?
-
-
-위에서 살펴본 Event Loop의 동작과정을 통해서 이해해보겠습니다.
-
-1. 버튼을 클릭하여 event handler onClick 함수가 Call Stack에 추가
-2. handleAddItem() Call Stack에 추가
-3. setListData() Call Stack에 추가
-4. React setState call back은 배치 처리 대기열에 추가됨 (Microtask Queue에서 처리됨)
-5. setListData() Call Stack에서 제거
-6. scrollTo() 함수 Call Stack 추가
-7. scrollTo() 호출(호출을 하였으나 아직 상태가 변경되지 않음)
-8. scrollTo() 함수 Call Stack에서 제거
-9. handleAddItem() Call Stack에서 제거
-10. event handler onClick 함수 Call Stack에서 제거
-11. Microtask Queue에서 React bacth 업데이트 함수 실행
-12. rendering
-
-위에서 살펴본 Evnet Loop 과정으로 하나씩 짚어보니 어떤 문제가 있는지 알겠네요.
-
-
-React에서 batch update 처리를 하면서 Microtask Queue에서 상태업데이틀 하였기 때문입니다.
-
-
-### 태스크 큐를 이용해보자
-
-
-이벤트 루프에서 Microtask Queue는 항상 먼저 실행되는 Queue라고 하였습니다.
-의도대로 동작시키기 위해서 이벤트 루프의 동작 원리를 활용해보겠습니다.
-
-
-```javascript
-...
-  const handleAddItem = () => {
-    setListData((prev) => [...prev, item]);
-
-    setTimeout(() => {
-      ref.current?.scrollTo({
-        left: ref.current?.scrollWidth,
-        behavior: "smooth",
-      });
-    }, 0);
-  };
-
-...
-```
-
-
-scrollTo 함수를 setTimeout Callback에 넣어주었습니다.
-
-
-![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/e86ff142-2b58-493f-90c8-dd06684cf61b/image.gif)
-
-
-좋아요! 의도대로 아주 잘 동작하네요.
-
-
-이번에도 이벤트 루프 동작 과정을 살펴보겠습니다.
-
-1. 버튼을 클릭하여 event handler onClick 함수가 Call Stack에 추가
-2. handleAddItem() Call Stack에 추가
-3. setListData() Call Stack에 추가
-4. React setState call back은 배치 처리 대기열에 추가됨 (Microtask Queue에서 처리됨)
-5. setListData() Call Stack에서 제거
-6. setTimeout 함수 Call Stack에 추가
-7. 콜백 함수를 Timer Web API에 전달하고,브라우저에서는 0ms 셈하고 Task Queue에 넣어줌
-8. setTimeout 함수 Call Stack에서 제거
-9. handleAddItem() Call Stack에서 제거
-10. event handler onClick 함수 Call Stack에서 제거
-11. Microtask Queue에서 React bacth 업데이트 함수 실행
-12. rendering
-13. Task Queue에서 setTimeout Callback Call Stack으로 이동
-14. scrollTo() 함수 Call Stack 추가
-15. scrollTo() 호출
-16. scrollTo() 함수 Call Stack에서 제거
-17. setTimeout Callback Call Stack에서 제거
-
-여기까지 이벤트 루프의 동작을 통해서 보니 왜 동작하는지 명확히 알 수 있었습니다.
-
-
 ## 정리
 
 - 자바스크립트의 비동기처리는 브라우저의 이벤트 루프가 관리함
@@ -397,5 +245,14 @@ scrollTo 함수를 setTimeout Callback에 넣어주었습니다.
 # References
 
 
-[MDN](https://developer.mozilla.org/ko/docs/Web/JavaScript/Event_loop)[lydiahallie님의 Event Loop 설명](https://www.lydiahallie.com/blog/event-loop)[인파님의 Event Loop 설명](https://inpa.tistory.com/entry/%F0%9F%94%84-%EC%9E%90%EB%B0%94%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A3%A8%ED%94%84-%EA%B5%AC%EC%A1%B0-%EB%8F%99%EC%9E%91-%EC%9B%90%EB%A6%AC)[React Batch Update](https://react.dev/learn/queueing-a-series-of-state-updates)
+[MDN](https://developer.mozilla.org/ko/docs/Web/JavaScript/Event_loop)
+
+
+[lydiahallie님의 Event Loop 설명](https://www.lydiahallie.com/blog/event-loop)
+
+
+[인파님의 Event Loop 설명](https://inpa.tistory.com/entry/%F0%9F%94%84-%EC%9E%90%EB%B0%94%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A3%A8%ED%94%84-%EA%B5%AC%EC%A1%B0-%EB%8F%99%EC%9E%91-%EC%9B%90%EB%A6%AC)
+
+
+[React Batch Update](https://react.dev/learn/queueing-a-series-of-state-updates)
 

@@ -1,0 +1,127 @@
+---
+title: "개인 블로그를 드디어 만들었다."
+publishedAt: "2025-11-23"
+summary: ""
+language: "ko"
+tags: []
+---
+
+
+나 여진돌.. 드디어 개인 블로그를 만들었다.
+
+
+지인분들과 블로그를 만들어보자! 했었는데 시간이 없어서 계속 미뤄두다가 드디어 작업하였다. (사실 조금 잊고 있었다..)
+
+
+작업했던 내용을 아주.. 가벼운 일기 느낌으로 작성해보았다.
+
+
+## 시작
+
+
+어디서부터 시작하지 막막했는데, 찬규님이 [템플릿](https://github.com/vercel/examples/tree/main/solutions/blog)을 공유해주셨다.
+
+
+OG태그, sitemap 등 기본적인 내용들이 잘 되어있어서 디자인만 하면 되는 정도였다. 다른 분들도 해당 템플릿에서 바이브 코딩을 하면 몇시간 안걸려서 완성했다! 라고 하셔서 가벼운 마음으로 시작해보았다.
+
+
+## 디자인
+
+
+나는 옛날부터 아이팟 클래식을 좋아했었다.
+
+
+그래서 클로드와 함께 디자인 가이드 md파일 만드는데 많은 시간을 사용했다.
+
+
+구글에 있는 아이팟 사진들과 굴곡 그라데이션 등 많은 대화를 나누며 디자인 가이드 파일을 만들었다.
+
+
+완전 만족스럽지는 않지만 원하는 느낌으로 잘 완성되..었다… 
+
+
+## CMS
+
+
+당시에 블로그를 어떻게 만들까? 지인분들과 얘기할 때 블로그글을 어떻게 관리할까 고민하며 나왔던 플로우 내용이다.
+
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/31f2b036.webp)
+
+
+노션을 통해서 간편하게 작성하고 깃허브에 md파일을 업로드하는 플로우다.
+
+
+### 이미지 처리
+
+
+주의해야될 점은 노션의 이미지는 만료시간이 있어서 local로 이미지를 저장하거나 따로 S3에 업로드해서 사용해야한다.
+
+
+local로 이미지를 저장하는 것은 번들크기를 증가시킬 수 있으니 나는 S3를 사용하였다. 
+
+
+### 다국어
+
+
+블로그 글은 제미니 API를 사용해서 노션글을 번역하고 영문 버전도 함께 제공하고자 하였다.
+
+
+바이브 코딩으로 API 프롬프트를 만들어달라고 했다. 만족스럽다.
+
+
+```typescript
+function createTranslationPrompt(content: string): string {
+  return `You are a professional technical translator specializing in software engineering content.
+
+Task: Translate the following Korean blog post to natural, fluent English.
+
+CRITICAL REQUIREMENTS:
+1. Preserve ALL Markdown syntax EXACTLY (##, ###, -, *, \`, \`\`\`, >, [], (), etc.)
+2. DO NOT translate:
+   - Code blocks (content inside \`\`\` \`\`\`)
+   - Code snippets (content inside \` \`)
+   - URLs and links
+   - File paths and file names
+   - Package names and technical identifiers
+   - HTML/JSX tags
+3. Translate frontmatter fields:
+   - title: Translate to natural English
+   - summary: Translate to natural English
+   - Keep other fields (publishedAt, language, tags) unchanged
+   - Change language field value from "ko" to "en"
+4. Maintain professional, technical writing style
+5. Use standard technical terminology
+6. Keep the same structure and formatting
+
+ORIGINAL KOREAN CONTENT:
+---
+${content}
+---
+
+Provide ONLY the translated content in English. Do not add explanations or comments.
+
+TRANSLATED ENGLISH CONTENT:`;
+}
+```
+
+
+그 외의 기본적인 내용들은 intl 라이브러리들을 사용해서 번역처리를 진행했다.
+
+
+유저의 언어는 cookie에 기본값을 저장 및 수정할 수 있도록 처리하였다.
+
+
+## 만족스러운 디자인
+
+
+옛날부터 블로그만들 때 넣고싶다 생각한 디자인이었는데 너무 귀엽다. 만족스럽다.
+
+
+![%E1%84%92%E1%85%AA%E1%84%86%E1%85%A7%E1%86%AB_%E1%84%80%E1%85%B5%E1%84%85%E1%85%A9%E1%86%A8_2025-11-23_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_10.58.52.gif](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/b75fcf16.webp)
+
+
+## TODO..
+
+1. 조회수, 방문수 등 redis 작업 추가
+2. 디자인 개선

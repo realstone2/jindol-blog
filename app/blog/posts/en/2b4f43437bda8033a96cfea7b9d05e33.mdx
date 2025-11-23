@@ -1,0 +1,99 @@
+---
+title: "I Finally Created My Personal Blog"
+publishedAt: "2025-11-23"
+summary: ""
+language: "en"
+tags: []
+---
+
+I, Yeojindol, have finally created my personal blog.
+
+My acquaintances and I had planned to create a blog, but due to lack of time, it kept getting postponed. I've finally gotten around to it. (To be honest, I had somewhat forgotten about it...)
+
+I've written about the process in a very light, diary-like fashion.
+
+## Getting Started
+
+I was at a loss as to where to begin, but Chan-gyu shared a [template](https://github.com/vercel/examples/tree/main/solutions/blog) with me.
+
+Basic elements like OG tags and sitemaps were well-implemented, so it was mostly a matter of just focusing on the design. Others mentioned they completed their blogs in just a few hours using this template with 'vibe coding,' so I started with a light heart.
+
+## Design
+
+I've always liked the iPod Classic.
+
+So, I spent a lot of time creating a design guide `md` file with Claude.
+
+I created the design guide file through extensive discussions, referencing iPod photos on Google and discussing curved gradients, among other things.
+
+While not entirely satisfied, it turned out quite well, achieving the desired feel...
+
+## CMS
+
+When discussing how to create the blog with my acquaintances, this workflow emerged from our deliberations on how to manage blog posts.
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/31f2b036.webp)
+
+It's a workflow where posts are easily written in Notion and then `md` files are uploaded to GitHub.
+
+### Image Handling
+
+A point to note is that Notion images have an expiration time, so images must either be saved locally or uploaded separately to S3 for use.
+
+Saving images locally can increase the bundle size, so I opted to use S3.
+
+### Multilingual Support
+
+I aimed to translate Notion posts using the Gemini API and provide an English version alongside the original.
+
+I asked for the API prompt to be created with 'vibe coding.' I'm satisfied with it.
+
+```typescript
+function createTranslationPrompt(content: string): string {
+  return `You are a professional technical translator specializing in software engineering content.
+
+Task: Translate the following Korean blog post to natural, fluent English.
+
+CRITICAL REQUIREMENTS:
+1. Preserve ALL Markdown syntax EXACTLY (##, ###, -, *, \`, \`\`\`, >, [], (), etc.)
+2. DO NOT translate:
+   - Code blocks (content inside \`\`\` \`\`\`)
+   - Code snippets (content inside \` \`)
+   - URLs and links
+   - File paths and file names
+   - Package names and technical identifiers
+   - HTML/JSX tags
+3. Translate frontmatter fields:
+   - title: Translate to natural English
+   - summary: Translate to natural English
+   - Keep other fields (publishedAt, language, tags) unchanged
+   - Change language field value from "ko" to "en"
+4. Maintain professional, technical writing style
+5. Use standard technical terminology
+6. Keep the same structure and formatting
+
+ORIGINAL KOREAN CONTENT:
+---
+${content}
+---
+
+Provide ONLY the translated content in English. Do not add explanations or comments.
+
+TRANSLATED ENGLISH CONTENT:`;
+}
+```
+
+For other basic content, I handled translation using `intl` libraries.
+
+The user's language is handled so that a default value can be stored and modified in a `cookie`.
+
+## Satisfying Design
+
+This is a design I've wanted to incorporate since I first thought about creating a blog, and it's so cute. I'm satisfied.
+
+![%E1%84%92%E1%85%AA%E1%84%86%E1%85%A7%E1%86%AB_%E1%84%80%E1%85%B5%E1%84%85%E1%85%A9%E1%86%A8_2025-11-23_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_10.58.52.gif](https://duzswvwtwcafa.cloudfront.net/posts/2b4f43437bda8033a96cfea7b9d05e33/b75fcf16.webp)
+
+## TODO..
+
+1.  Add Redis operations for page views, visits, etc.
+2.  Design improvements
