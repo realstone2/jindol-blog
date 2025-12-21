@@ -586,3 +586,4 @@ body: 항상 text-base (변경 없음)
 **Last Updated**: 2025년 1월 17일  
 **Design System Version**: 4.0.0 (iPod Classic LCD Edition)
 
+
