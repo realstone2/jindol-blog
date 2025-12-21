@@ -19,7 +19,7 @@ export default async function Page({
       <div className="bg-gradient-to-b from-[#6ba8e0] via-[#5e9ed6] to-[#3d7eb3] px-6 py-4 border-b border-[#2a2a2a] flex-shrink-0 ipod-title-3d">
         <div className="flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-            📝 {lang === "ko" ? "최근 게시글" : "Recent Posts"}
+            📝 {lang === "ko" ? "게시글" : "Posts"}
           </h1>
           <span className="text-xs text-white/80 font-medium">Playlist</span>
         </div>
