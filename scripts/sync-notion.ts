@@ -262,6 +262,17 @@ async function syncNotion() {
       const metadata = extractMetadata(page);
       const slug = metadata.slug;
 
+      // 날짜 데이터가 있는지 확인 (date 필드만 확인)
+      const hasDateField = page.properties.date?.date?.start;
+
+      if (!hasDateField) {
+        console.log(
+          `  ⏭️  건너뜀: ${metadata.title} (${slug}) - 날짜 데이터 없음`
+        );
+        skippedCount++;
+        continue;
+      }
+
       // 이미 존재하는 ID인지 확인
       if (existingSlugs.has(slug)) {
         console.log(`  ⏭️  건너뜀: ${metadata.title} (${slug}) - 이미 존재함`);

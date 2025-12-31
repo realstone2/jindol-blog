@@ -1,0 +1,212 @@
+---
+title: "What I Learned While Supporting 18 Languages"
+publishedAt: "2025-12-31"
+summary: ""
+language: "en"
+tags: []
+---
+
+Developing global services is more complex than it seems.
+
+It's not just about replacing translated text; there are also different rules for each language, layout issues, operational challenges, and more.
+
+I've summarized the experiences I gained while supporting 18 languages.
+
+## I18n
+
+i18n (an abbreviation for internationalization: i + 18 letters + n) refers to the design and development of products, applications, or document content that can be easily localized for target customers with diverse cultures, regions, and languages.
+
+Fundamentally, it would be terrible to consider developing globally without any libraries. Even comparing just the US and Korea, currency units, date formats, and more are different. Parsing while considering all countries would be awful.
+
+Fortunately, there's an open-source project called ICU that actually implements this.
+
+## ICU
+
+- *ICU (International Components for Unicode)** is a C/C++ based open-source library that implements the i18n concept and is used by all major browser engines.
+- Date/Time Formatting (`DateTimeFormat`)
+- Number Formatting (`NumberFormat`)
+- Currency
+- Plural Rules (`PluralRules`)
+- String Collation (`Collator`)
+- TimeZone, Calendar
+- Unicode normalization
+
+Everything that differs by country is delegated to and used via ICU.
+
+### 1) Intl
+
+In browser or Node.js engines, ICU is called and used via the Intl APIs.
+
+Excluding language, internationalization can generally be handled through the Intl API provided by the engine, without needing to install additional libraries.
+
+- Date example
+
+```typescript
+const date = new Date('2025-03-01T15:30:00Z');
+
+const ko = new Intl.DateTimeFormat('ko-KR', {
+  dateStyle: 'full',
+  timeStyle: 'short',
+  timeZone: 'Asia/Seoul',
+});
+
+const us = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'full',
+  timeStyle: 'short',
+  timeZone: 'America/New_York',
+});
+
+console.log(ko.format(date));
+// 2025년 3월 2일 일요일 오후 12:30
+
+console.log(us.format(date));
+// Saturday, March 1, 2025 at 10:30 AM
+```
+
+Additionally, to manage languages, translated languages conforming to the ICU Message Format must be used.
+
+### 2) [ICU Message Format](https://unicode-org.github.io/icu/userguide/format_parse/messages/)
+
+Plural rules differ by language. English distinguishes between 1 item and 2+ items, but Russian has four forms: 1, 2-4, 5+, and 11-14.
+
+If you were to handle this with `if` statements, you'd have to implement all plural rules for each language in code. ICU Message Format is a standard syntax designed to solve this problem.
+
+- Plural handling
+
+```typescript
+// 한국어
+`{count, plural, other {# 개의 상품}}`
+
+// 영어
+`{count, plural,
+  one {# item}
+  other {# items}}`
+
+// 러시아어
+`{count, plural,
+  one {# книга}
+  few {# книги}
+  many {# книг}
+  other {# книги}}`
+```
+
+Translators can also directly write plural rules according to the standardized syntax. Translation platforms like Crowdin and Phrase also support ICU syntax.
+
+- JSON
+
+```json
+{
+  "items": "{count, plural, other {# 개의 상품}}"
+}
+```
+
+If you just provide a JSON file, translators will fill in `one`, `few`, `many`, etc., according to each language, and return it. Developers don't need to touch the pluralization logic.
+
+However, since the Intl API does not provide message formatting, you can choose a library that follows ICU rules, such as **react-intl** or **next-intl**, depending on the situation, to handle formatting.
+
+## Text Wrapping
+
+Languages are fundamentally divided into CJK (Chinese, Japanese, Korean) characters and Non-CJK characters.
+
+| Category                 | Default Breakpoint | Characteristics                               |
+| ------------------------ | ------------------ | --------------------------------------------- |
+| **Non-CJK** (e.g., English) | Space              | Line breaks only at word boundaries, cannot split in the middle of a word |
+| **CJK** (Chinese, Japanese, Korean)      | Syllable/Character | Line breaks possible between any characters   |
+
+For Non-CJK languages, spaces are naturally the break points, leading to automatic line wrapping.
+
+For CJK languages, all characters are fundamentally break points for automatic line wrapping, but culturally, it's slightly different.
+
+### 1) CJK
+
+- Korean
+
+If all words are broken by default, characters are separated by syllable units. While breaking Korean text by syllable units doesn't significantly impair readability, in practice, UX requirements often prefer breaking by word units.
+
+In such cases, we could address this by setting the `word-break` property to `keep-all` specifically for Korean.
+
+- Japanese
+
+Japanese words are formed by combining multiple characters into a single syllable.
+
+However, since Japanese lacks spaces (break points), it can feel similar to English words being entirely broken.
+
+Therefore, for Japanese, `line-break` CSS should be applied to implement line wrapping according to national language rules.
+
+### 2) Non-CJK
+
+For Non-CJK languages, if the space (breakpoint) does not fit within the content area, text overflow can occur.
+
+In such cases, it's necessary to handle this using the `overflow-wrap` (`word-wrap`) CSS property.
+
+### Summary
+
+To summarize, text wrapping differs by country, so `overflow-wrap`, `word-break`, and `line-break` CSS properties must be used appropriately to address these differences.
+
+## Challenging QA
+
+Both designers and developers typically work in a familiar language during the actual development phase. This is usually English or Korean, but many issues can arise when performing QA in other languages.
+
+### 1) Long Languages
+
+We frequently encounter situations where a simple, short text on a small button in Russian becomes very long, causing the layout to appear differently than expected. Therefore, it's common for the layout itself to change during QA.
+
+### 2) Font Height
+
+Since text length and font height vary by language, caution is always needed when using fixed values.
+
+If content height is fixed and vertical padding is used to adjust height, you might encounter situations where the font itself is cut off in different languages.
+
+Content alignment should be done using `flex`-based layouts or `padding: auto` values.
+
+### 3) Is the Language Correct?
+
+Neither developers nor QA can tell if the language is incorrect. We have no choice but to trust the translated language.
+
+If incorrect language is discovered after deployment, a new deployment would be needed for correction, so various strategies are required for operation in this regard.
+
+In my previous company, we managed translated languages on S3, using a strategy where updates made in the translation system would automatically refresh the translations on S3 without requiring additional developer deployments.
+
+## Operational Issues
+
+Operating a multilingual app involves many considerations.
+
+Below is how an operator would add a single announcement when running a domestic service.
+
+1.  Create a Notion page for the announcement
+2.  Create a banner image using Figma
+3.  Upload image and enter Notion page link via back office
+4.  Upload
+
+For a domestic service, this is a very simple flow.
+
+However, when operating a global service, uploading an announcement became a very difficult task.
+
+1.  Write the announcement in Korean
+2.  Translate into 18 languages
+3.  Create 18 Notion pages, one for each translated language
+4.  Create 18 banner images, translated for each language, using Figma
+5.  Upload 18 images and enter Notion page links via back office
+6.  Upload
+
+According to a team member who was operating it, uploading a single announcement took over 3 hours. Operating a global service is truly not easy.
+
+(This problem was solved by building automation, making it a "click" operation; I should write a separate blog post about this later.)
+
+## Summary
+
+From a development perspective:
+
+-   **ICU and Intl API.** Internationalization features are already implemented in browser engines. Date, number, and currency formats can be handled without libraries.
+-   **Plural Rules.** Plural rules differ by language. Russian has four forms. ICU Message Format solves this complexity with a standardized syntax.
+-   **Language-specific Line Wrapping Rules.** CJK and Non-CJK differ, and Korean and Japanese also have subtle differences. `overflow-wrap`, `word-break`, and `line-break` must be combined appropriately for each situation.
+-   **Language-specific Font Height.** A combination of fixed height and padding can cause text to be cut off in certain languages. Flexible handling with `flex` or `auto` values is necessary.
+-   **Translation Platforms.** Platforms like Crowdin and Phrase support ICU syntax. Translators can directly write plural rules.
+
+From a non-development perspective:
+
+-   **QA Scope.** Supporting 18 languages expands the QA scope beyond imagination. Long languages like Russian can sometimes require a complete layout redesign.
+-   **Translation Trust.** Neither developers nor QA know the target language, so there's no way to verify if the translation is correct. A strategy for post-deployment corrections is necessary.
+-   **Operational Complexity.** Even uploading a single announcement creates a complex workflow. Operational issues must be resolved with various strategies.
+
+A global service is not just about changing languages. Everything—technology, operations, QA, and the translation process—is complex.
