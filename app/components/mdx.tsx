@@ -3,26 +3,46 @@ import Image from "next/image";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { highlight } from "sugar-high";
 import React from "react";
+import remarkGfm from "remark-gfm";
 
-function Table({ data }) {
-  let headers = data.headers.map((header, index) => (
-    <th key={index}>{header}</th>
-  ));
-  let rows = data.rows.map((row, index) => (
-    <tr key={index}>
-      {row.map((cell, cellIndex) => (
-        <td key={cellIndex}>{cell}</td>
-      ))}
-    </tr>
-  ));
-
+function Table({ children, ...props }) {
   return (
-    <table>
-      <thead>
-        <tr>{headers}</tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
+    <div className="overflow-x-auto my-6">
+      <table
+        className="min-w-full border-collapse border border-gray-300"
+        {...props}
+      >
+        {children}
+      </table>
+    </div>
+  );
+}
+
+function Thead({ children, ...props }) {
+  return <thead {...props}>{children}</thead>;
+}
+
+function Tbody({ children, ...props }) {
+  return <tbody {...props}>{children}</tbody>;
+}
+
+function Tr({ children, ...props }) {
+  return <tr {...props}>{children}</tr>;
+}
+
+function Th({ children, ...props }) {
+  return (
+    <th className="border border-gray-300 px-4 py-2 text-left" {...props}>
+      {children}
+    </th>
+  );
+}
+
+function Td({ children, ...props }) {
+  return (
+    <td className="border border-gray-300 px-4 py-2" {...props}>
+      {children}
+    </td>
   );
 }
 
@@ -96,13 +116,22 @@ let components = {
   Image: RoundedImage,
   a: CustomLink,
   code: Code,
-  Table,
+  thead: Thead,
+  tbody: Tbody,
+  tr: Tr,
+  th: Th,
+  td: Td,
 };
 
 export function CustomMDX(props) {
   return (
     <MDXRemote
       {...props}
+      options={{
+        mdxOptions: {
+          remarkPlugins: [remarkGfm],
+        },
+      }}
       components={{ ...components, ...(props.components || {}) }}
     />
   );
