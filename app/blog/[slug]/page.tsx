@@ -5,6 +5,10 @@ import { baseUrl } from "app/sitemap";
 import { getUserLanguage } from "app/lib/language";
 import { Comments } from "app/components/comments";
 import { IpodContainer } from "app/components/ipod-container";
+import { getTranslations } from "next-intl/server";
+
+const LOCALE_MAP = { ko: "ko_KR", en: "en_US" } as const;
+const FALLBACK_LANG = { ko: "en", en: "ko" } as const;
 
 export async function generateStaticParams() {
   // 모든 언어의 포스트 생성
@@ -37,7 +41,7 @@ export async function generateMetadata({
 
   // 해당 언어 버전이 없으면 다른 언어로 fallback
   if (!post) {
-    const fallbackLang = lang === "ko" ? "en" : "ko";
+    const fallbackLang = FALLBACK_LANG[lang];
     post = getBlogPosts(fallbackLang).find((post) => post.slug === slug);
   }
 
@@ -71,8 +75,8 @@ export async function generateMetadata({
       type: "article",
       publishedTime,
       url: `${baseUrl}/blog/${post.slug}`,
-      locale: lang === "ko" ? "ko_KR" : "en_US",
-      alternateLocale: lang === "ko" ? ["en_US"] : ["ko_KR"],
+      locale: LOCALE_MAP[lang],
+      alternateLocale: [LOCALE_MAP[FALLBACK_LANG[lang]]],
       images: [
         {
           url: ogImage,
@@ -99,11 +103,13 @@ export default async function Blog({
   const queryParams = await searchParams;
   const lang = await getUserLanguage(queryParams);
 
+  const t = await getTranslations({ locale: lang, namespace: "post" });
+
   let post = getBlogPosts(lang).find((post) => post.slug === slug);
 
   // 해당 언어 버전이 없으면 다른 언어로 fallback
   if (!post) {
-    const fallbackLang = lang === "ko" ? "en" : "ko";
+    const fallbackLang = FALLBACK_LANG[lang];
     post = getBlogPosts(fallbackLang).find((post) => post.slug === slug);
   }
 
@@ -162,7 +168,7 @@ export default async function Blog({
                   <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
                 </svg>
                 <h2 className="text-xl font-bold text-[#1a1a1a]">
-                  {lang === "ko" ? "댓글" : "Comments"}
+                  {t("comments")}
                 </h2>
               </div>
               <Comments lang={lang} />

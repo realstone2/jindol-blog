@@ -1,6 +1,12 @@
 {
   "home": {
-    "title": "내 포트폴리오",
+    "title": "게시글",
     "description": "안녕하세요 프론트엔드 개발자 여진석입니다."
+  },
+  "blog": {
+    "title": "모든 게시글"
+  },
+  "post": {
+    "comments": "댓글"
   }
 }

@@ -11,14 +11,6 @@ interface IpodContainerClientProps {
   currentPath: string;
 }
 
-// 현재 pathname 기반으로 페이지 이름 가져오기
-function getPageName(pathname: string): string {
-  if (pathname === "/") return "Home";
-  if (pathname === "/blog") return "Blog";
-  if (pathname.startsWith("/blog/")) return "Post";
-  return "Home";
-}
-
 // 현재 pathname이 특정 경로와 일치하는지 확인
 function isActivePath(currentPath: string, targetPath: string): boolean {
   if (targetPath === "/") {
@@ -45,7 +37,6 @@ export function IpodContainerClient({
   currentPath,
 }: IpodContainerClientProps) {
   const pathname = usePathname();
-  const pageName = getPageName(pathname || currentPath);
 
   // GPU 가속을 위한 ref
   const progressBarRef = useRef<HTMLDivElement>(null);

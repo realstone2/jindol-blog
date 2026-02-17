@@ -1,6 +1,12 @@
 {
   "home": {
-    "title": "My Portfolio",
+    "title": "Posts",
     "description": "Hello, I'm Yeo Jinseok, a frontend developer."
+  },
+  "blog": {
+    "title": "All Posts"
+  },
+  "post": {
+    "comments": "Comments"
   }
 }
