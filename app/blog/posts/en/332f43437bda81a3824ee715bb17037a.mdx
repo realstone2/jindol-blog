@@ -1,216 +1,187 @@
 ---
-title: "My Thoughts on AI and Coding These Days"
+title: "My Thoughts on Coding with AI These Days"
 publishedAt: "2026-03-29"
 summary: ""
 language: "en"
 tags: []
 ---
 
-AI is innovatively transforming our lives. Developers, in particular, seem to be facing an environment where they work with new tools every week.
+AI is innovatively changing our lives. Developers, in particular, seem to be facing an environment where they work with new tools every week.
 
-Yet, amidst this transformation, some things remain constant. We must generate sustainable code and write code that is easy for humans to read. Code that is difficult for us to understand will similarly be difficult for AI to comprehend.
+Yet, amidst this process, some things remain unchanged. We must generate sustainable code and write code that is easy for humans to read. Code that is difficult for us to understand is equally difficult for AI to understand.
 
-If AI is not performing as expected, it seems we've reached a point where we should question existing brownfield issues and whether the team's development approach is flawed.
-
----
-
-## Vibe Coding is Not Sustainable
-
-It seems over a year has passed since the term "vibe coding" emerged. Initially, observing the outputs of vibe coding, I often joked with friends and colleagues, suggesting we "just go farming."
-
-But what are the results? At present, I believe I can state with certainty: sustainable services cannot be launched through vibe coding.
-
-If you explain to AI what kind of app to build, how to approach it, and the overall planning, and then instruct it to develop, it will never work perfectly on the first try. You'll find yourself repeatedly making corrections, even cursing, "This isn't right." Repeated modifications lengthen the context, gradually losing the prior context and continuously generating uncontrollable bugs. Only then do we examine the generated code and curse profusely.
-
-Vibe coding cannot exist. It is safe to say this will be impossible even in the future. Simply saying "do it for me" cannot make AI 100% understand our desired approach from vast amounts of data. LLMs are essentially fill-in-the-blank models; there's no way they can simply execute the exact functionalities we desire.
-
-So, how can developers achieve sustainable coding with AI? What is the role of developers in this era?
+If AI is not performing well, it seems we've reached a point where we should suspect issues with existing brownfield projects or question whether the team is developing in an incorrect manner.
 
 ---
 
-## The Role of Developers
+## Vibe Coding Is Not Real
 
-I frequently hear that instead of direct development, our role is to constrain LLMs to produce the desired code and to program such an environment. Repeatedly issuing commands implies that it is the developer's role to configure skills and agents and to establish workflows.
+It seems more than a year has passed since the term 'vibe coding' emerged. Initially, upon seeing the results of vibe coding, my friends and colleagues and I would joke, "Let's just go farm instead."
 
-The phase of doubting LLMs is behind us. As developers, we should aim to create an environment where LLMs can perform effectively.
+But what about the results? As of now, I think I can say with certainty: sustainable services cannot be launched through vibe coding.
+
+If you explain to AI what kind of app to build, how to do it, the planning, etc., and then have it develop, it never works well on the first try. You end up repeatedly making corrections, often muttering, "This isn't right." Repeated modifications lengthen the context, gradually lose the previous context, and continuously create uncontrollable bugs. Only then do we look at the code we've set up and curse endlessly.
+
+Vibe coding cannot exist. It's impossible even in the future. Simply saying "do it for me" cannot make AI 100% understand our desired approach from vast amounts of data. LLMs are essentially fill-in-the-blank models; there's no way they can just implement the features we want.
+
+So, how can developers achieve sustainable coding with AI? What is the role of a developer in this era?
+
+---
+
+## The Role of the Developer
+
+I often hear that instead of direct development, the role of a developer is to constrain LLMs to perform the coding we desire and to code such environments. This means configuring skills and agents and building flows for repetitive commands.
+
+The stage of doubting LLMs has passed. As developers, we should aim to create environments where LLMs can perform their tasks effectively.
 
 ### Harness Engineering
 
-Numerous open-source harness environments, such as OMC, OMO, and OMX, have recently gained significant popularity. This is because, regardless of how advanced LLM models become, we still need to clearly articulate our requirements. We must minimize autonomous actions and reduce ambiguity.
+Numerous open-source harness environments like OMC, OMO, and OMX have recently gained immense popularity. This is because no matter how much LLM models advance, we still need to clearly explain what we want. We must minimize the 'do it automatically' parts and reduce ambiguity.
 
-These open-source harnesses restrict developer autonomy, forcibly reduce ambiguity through flows provided within the harness environment, and enable sub-agents to work in parallel on clearly delineated contexts. They yield favorable outcomes by enforcing constraints, even when developers do not manually construct each flow.
+These open-source harnesses restrict developer freedom, forcibly reduce ambiguity through flows provided by the harness environment, and enable sub-agents to work in parallel on clearly separated contexts. They provide good results by enforcing constraints, even if developers don't build each flow manually.
 
-However, this harness environment is ultimately not tailored for our team. Generic harnesses, unaware of our team's conventions, design system, and deployment pipeline, presented limitations. We concluded that we need to configure a harness customized for our team or individual requirements.
+However, even these harness environments are ultimately not tailored for our team. Generic harnesses, unaware of our team's conventions, design systems, or deployment pipelines, have limitations. We concluded that we need to configure harnesses specifically for our team or individual needs.
 
 ---
 
 ## My Workflow
 
-Listening to how others work, it seemed they were all encountering similar problems and adopting comparable approaches. I felt it was crucial to differentiate between tasks that can and cannot be delegated to AI, and to clearly define the stages requiring human intervention.
+Listening to how others work, it seemed they were all encountering the same problems and working in similar ways. I felt it was crucial to distinguish between what can and cannot be delegated to AI, and to clearly define the stages where human intervention is necessary.
 
 ### Delegable Areas
 
-Repetitive and clearly patterned tasks, such as code generation, refactoring, test writing, documentation, commit message generation, and PR creation, could be delegated to AI. With well-defined references, the results consistently met expectations.
+Repetitive and clearly patterned tasks such as code generation, refactoring, test writing, documentation, commit message generation, and PR creation could be delegated to AI. If references were well-defined, the results sufficiently matched the intent.
 
 ### Non-Delegable Areas
 
-Design decisions, requirement interpretation, final judgments in code reviews, and subjective assessments of user experience still required human input. Whether the results generated by AI "work" and whether they are "correct" were distinct issues.
+Design decisions, requirement interpretation, final judgments in code reviews, and subjective judgments about user experience still needed human involvement. Whether AI-generated results "work" and whether they are "correct" were different issues.
 
-### Required Steps
+### So, where should humans intervene?
 
-Once these two areas were delineated, the workflow steps naturally emerged.
+Dividing these two areas made the moments requiring judgment clear.
 
-1.  Process of reducing ambiguity
-2.  Breaking down PRDs into the smallest units for delegation
-3.  Reference routing for code generation according to correct references
-4.  Code review stage
-5.  Raising PRs targeting feature branches per PRD
-6.  Reviewing (AI/Human)
+1.  When interpreting requirements,
+2.  When approving PRDs,
+3.  When conducting code reviews
 
-### 1. Process of Reducing Ambiguity
+A structure was needed where humans verify at these three points, and AI executes the rest.
 
-To reduce ambiguity, I utilized the `/deep-interview` skill. When context is provided in a Socratic interview style, it iteratively asks and answers questions to derive PRD-level specifications. For both Bugs and Features, the initial step involves collecting relevant context (Jira tickets, Slack threads, Figma designs, Confluence specs) and feeding it into this skill.
+Therefore, I made each step an independent skill, and an orchestration skill called `/haejo` chains this entire flow. When you input "develop login page for me," it executes the following steps sequentially, asking "Proceed?" at the end of each step. This structure stops at moments requiring human judgment and delegates execution, which AI excels at, to AI.
 
-### 2. Breaking Down PRDs into Minimal Units
+```javascript
+/haejo "로그인 페이지 개발해줘"
 
-For feature development, I employed the `/prd-gen` skill. It clarifies requirements based on `/deep-interview`, breaks them down into minimal PRD units, and even generates a dependency graph. The separated PRDs are executed by `/prd-exec` in dependency order, and the core idea was to run `/deep-interview` once more for each PRD to completely eliminate ambiguity.
+Step 1: /prd-gen ── Reduce Ambiguity + PRD Separation
+   ✅ 완료 → "Proceed?"
 
-### 3. Reference Routing
+Step 2: /prd-exec ── PRD-specific Implementation + Self-Review
+   ✅ 완료 → "Proceed?"
 
-Initially, I consolidated all rules into a single [CLAUDE.md](http://claude.md/) file. UI component checklists, common rules, and framework settings were intermingled in one file, expanding to 341 lines. Claude reading all of this in every session resulted in significant token waste.
+Step 3: /create-pr ── PR Creation
+   ✅ 완료 → "Send Slack review request too?"
 
-The solution was to reduce [CLAUDE.md](http://claude.md/) to serve as a routing table. Detailed rules were categorized and separated under `.claude/ref/`, and [CLAUDE.md](http://claude.md/) retained only matching conditions such as "read which ref when working on which file." For instance, modifying a `.tsx` file would trigger reading `ui-implementation.md`, and working on `*Form*.tsx` would additionally load `form-architecture.md`. This reduced the file to 137 lines, a 60% reduction, allowing Claude to selectively load only the necessary references.
+Step 4: /review-request ── Slack Notification (Optional)
+```
+
+Let's examine each step in detail.
+
+### Step 1: Reduce Ambiguity — /prd-gen
+
+The first thing to do in feature development is to collect relevant context (Jira tickets, Slack threads, Figma designs, Confluence specs) and feed it into `/prd-gen`.
+
+Internally, `/prd-gen` calls `/deep-interview`. It repeatedly asks questions and receives answers in a Socratic interview style, quantifying ambiguity and continuing to ask questions until ambiguity drops below 20%. Questions like "Should this feature work offline?" or "Should we extend the existing authentication middleware or create a separate flow?" emerge, revealing assumptions I hadn't considered.
+
+Once the interview is complete, the results are separated into minimum viable PRDs. Each PRD should be small enough to be reviewable as a single PR, and common components or hooks are separated into distinct PRDs. A dependency graph is also generated, clarifying which PRDs should be worked on first and which can be run in parallel.
+
+### Step 2: PRD-specific Implementation — /prd-exec
+
+Once a PRD is finalized, `/prd-exec` executes it in dependency order. For each PRD, the following process is repeated:
+
+1.  **Deep Interview once more** — Further clarification at the PRD level. Catches details not apparent in the overall specification.
+2.  **Sub-branch creation** — Creates PRD-specific sub-branches from the feature branch.
+3.  **Reference routing** — When a `.tsx` file is modified, it automatically reads the UI implementation checklist, and for Form-related tasks, it additionally reads the Form architecture guide. These references are key to making Claude write code according to our team's conventions.
+4.  **Implementation** — Code is written based on the PRD's Acceptance Criteria. PRDs without dependencies are implemented concurrently in parallel in separate worktrees.
+5.  **Self-review** — A code review agent validates the implementation in a separate context from the implementing agent. This separation is crucial because reviewing one's own code can lead to leniency. If issues are found, correction → re-validation is repeated up to 3 times.
+6.  **PR + User Review** — A PR is raised from the sub-branch to the feature branch, and I review it directly. If approved, it's merged, and the process moves to the next PRD.
+
+Reference routing originated from the experience of initially putting all rules into a single [CLAUDE.md](http://claude.md/) file, which then swelled to 341 lines. Detailed rules are separated by category under `.claude/ref/`, and the routing table only manages matching conditions like "read this ref when working on this file." A double safety mechanism with Hooks was also implemented because instructions alone sometimes led to omissions.
 
 ```javascript
 .claude/
-├── CLAUDE.md (137 lines, OMC + routing table + common rules)
+├── CLAUDE.md (Routing Table + Common Rules)
 └── ref/
     ├── ui/
-    │   ├── ui-implementation.md (Primitives, Props, CSS policies)
-    │   └── figma-workflow.md (Figma→Code 4 steps)
+    │   ├── ui-implementation.md (Primitives, Props, CSS Policies)
+    │   └── figma-workflow.md (Figma→Code 4 Steps)
     └── patterns/
         ├── form-architecture.md (Self-Contained Atomic Field)
         ├── feature-api.md (Mutation Hook Pattern)
         └── api-error-handling.md (ApiException Pattern)
 ```
 
-There were instances of omissions with instructions alone. I implemented a dual safeguard by adding a `PreToolUse` hook to `settings.local.json`, which automatically injects a reminder to ensure the reference was read when modifying `.tsx` files.
+### Step 3: PR Creation — /create-pr
 
-However, it still occasionally gets overlooked, so I am experimenting with various methods.
+Once all PRDs are merged, `/create-pr` generates a feature → main PR. If there are uncommitted changes, it categorizes them into logical units, separates the commits, and automatically creates a feature branch if work is being done on the main branch.
 
-### 4. Implementation and Self-Review
+If a reviewer is selected, it automatically asks, "Send Slack review request too?" If "Yes," `/review-request` sends a review request message to Slack, including an @mention. If a review is not needed, it can be skipped.
 
-Once the PRD is finalized and references are configured, the `/ralph` skill executes an automated implementation and verification loop. This approach iterates through code writing → testing → modification until completion.
+### Bug Fixing Flow
 
-### 5~6. PR Creation and Review
-
-Upon completion of implementation, `/create-pr` logically separates uncommitted changes, commits them, and then generates a GitHub PR. If working on the `main` branch, it automatically creates a feature branch. When a PR is raised, `/review-request` dispatches a review request message to Slack. Notion integration automatically handles task logging, difficulty logging, and 'Done' status updates on the task card within `/create-pr`.
-
-### Actual Workflow
-
-Combining the above steps results in two workflows: Bug Fix and Feature Development.
-
-**Bug Fix Workflow:**
+Bug fixing is simpler than feature development. Skills are called directly without going through `/haejo`.
 
 ```javascript
-┌─────────────────────────────────────────────────────┐
-│  1. Context Collection                                │
-│     Jira tickets + Slack threads + copy-pasting relevant discussions         │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  2. Specification Clarification — /deep-interview      │
-│     Organize bug specifications based on collected context              │
-│     ├ Complex bug → Detailed discussion then PRD derivation                 │
-│     └ Simple bug → Automatic judgment, proceed with immediate fix              │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  3. PRD Definition                                          │
-│     Describe desired fix specifications and finalize PRD                   │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  4. Implementation — /ralph                                     │
-│     Automatic implementation + verification loop based on PRD                │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  5. Self-Review                                          │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  6. Deployment Pipeline (Common)                                │
-│     /create-pr → /review-request → Notion Integration         │
-└─────────────────────────────────────────────────────────────────┘
+1. Context Collection — Jira Ticket + Slack Thread + Related Discussions
+2. /deep-interview — Bug Spec Clarification (Skip if simple)
+3. /ralph — PRD-based Automatic Implementation + Validation Loop
+4. /create-pr → /review-request
 ```
 
-**Feature Development Workflow:**
+`/ralph` is a skill that repeats code writing → testing → modification until completion. Bugs rarely require splitting PRDs into multiple parts, so implementation proceeds directly without `/prd-gen`.
 
-```javascript
-┌─────────────────────────────────────────────────────┐
-│  1. Context Collection                                │
-│     Input all Figma designs + Confluence specs + Slack discussions  │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  2. PRD Generation — /prd-gen                                │
-│     ├ Clarify overall requirements with /deep-interview              │
-│     ├ Automatic Figma design verification                             │
-│     ├ Separate into minimal PRD units + generate dependency graph              │
-│     └ Save PRD files in .omc/specs/                      │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  3. Sequential PRD Execution — /prd-exec                          │
-│     ├ Create feature branch                               │
-│     └ Repeat per PRD:                                      │
-│       ├ /deep-interview (additional clarification per PRD)              │
-│       ├ Create sub-branch                                 │
-│       ├ Reference routing checklist (automatic)                   │
-│       ├ Implementation + self-review (guideline-based)                    │
-│       ├ PR → feature branch                             │
-│       └ User review → modification → merge → next PRD               │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  4. Deployment Pipeline (Common)                                │
-│     /create-pr → /review-request → Notion Integration         │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Key Skills Being Used
 
-### Key Skills in Use
-
-| Skill             | Description                                                                                                                               |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `/deep-interview` | Removes ambiguity from specs using a Socratic interview method. Iteratively asks and answers questions to derive PRD-level specifications. |
-| `/ralph`          | Receives PRD as input and executes an automated implementation + verification loop. Repeats code writing → testing → modification until completion. |
-| `/prd-gen`        | Clarifies requirements based on `/deep-interview`, separates into minimal PRD units + dependency graph. Saves to `.omc/specs/`.                 |
-| `/prd-exec`       | Executes PRD files in dependency order. Per PRD: deep-interview → branch → implementation → self-review → PR → waits for user review.      |
-| `/simplify`       | Performs self-review by checking the quality, reusability, and efficiency of changed code.                                                |
-| `/create-pr`      | Logically separates uncommitted changes, commits them, and creates a GitHub PR. Automatically creates a feature branch if on the `main` branch. |
-| `/review-request` | Collects current PR information and sends a review request message to Slack (including @mentions).                                        |
-| Notion Integration | Automatically logs work, records difficulty, and marks as Done on Notion task cards within `/create-pr`.                                  |
+| Skill             | Description                                                                                             |
+| :---------------- | :------------------------------------------------------------------------------------------------------ |
+| `/haejo`          | Orchestrates the feature development flow. Chains the skills below step-by-step, with user confirmation at each stage |
+| `/deep-interview` | Removes ambiguity from specs using a Socratic interview method. Repeats questions and answers to derive PRD-level specifications |
+| `/prd-gen`        | Clarifies requirements based on /deep-interview, separates into minimum viable PRDs + dependency graph. Saved in .omc/specs/ |
+| `/prd-exec`       | Executes PRD files in dependency order. Per-PRD: deep-interview → branch → implementation → self-review → PR → user review |
+| `/ralph`          | Receives a PRD and performs automatic implementation + validation loop. Repeats code writing → testing → modification until completion |
+| `/simplify`       | Performs self-review by checking the quality, reusability, and efficiency of changed code               |
+| `/create-pr`      | Logically separates uncommitted changes, commits them, and creates a GitHub PR. Automatically asks for Slack review if a reviewer is selected |
+| `/review-request` | Collects current PR information and sends a review request message to Slack (including @mention)        |
+| `/task-record`    | Records work on Notion task cards + automatic difficulty assessment + Done processing                   |
 
 ### Notion-Based Task Management
 
-Currently, my company rarely uses Jira, so I manage tasks using personal Notion. When starting a task, I always designated or created a new Notion card to link, and when raising a PR, I consistently summarized the content of the current working session and recorded it on the Notion card.
+My current company barely uses Jira, so I manage tasks using personal Notion. When starting a task, I always designated or created a new Notion card to link, and when raising a PR, I used `/task-record` to summarize the session's work and record it on the Notion card.
 
-By doing this, over 130 Notion cards accumulated within two months. It was beneficial to have an automatic record of my daily activities over two months. Even without dedicating separate time for retrospectives, simply by scanning through the cards, I could recall which tasks I worked on, where I encountered blockers, and what decisions I made.
+Doing this, over 130 Notion cards accumulated in two months. It was great to have an automatic record of what I did each day for two months. Without needing to set aside separate time for retrospectives, I could just skim through the cards and see what tasks I worked on, where I got stuck, and what decisions I made.
 
 ---
 
 ## Conclusion
 
-No team can yet operate with 100% reliance on AI.
-However, it is clear that the majority of tasks can be delegated to AI.
+No team can yet work with 100% trust in AI.
 
-Recently, the team also initiated discussions on standardizing AI workflows under the title "Becoming SOTA-level Developers." Upon sharing our individual approaches, we found similar conclusions and agreed on directions such as separating the roles of CLAUDE.md, skills, and sub-agents, a Git strategy that differentiates between team-shared and personal settings, and data-driven skill verification. It is still under construction, and challenges such as the limitations of test code, token optimization, and how to demonstrate value to team members who do not use AI are ongoing.
+However, it's clear that most tasks can be delegated to AI.
 
-We must clearly recognize unreliable aspects, delineate responsibilities between human and AI within the team, and aim to establish a robust workflow.
+Recently, our team also began standardizing AI workflows under the name "Becoming a SOTA-level Developer."
+
+To implement it quickly, I first uploaded the flow I was using to the team repository, and we adopted an approach where team members review and refine it. We adopted OMC (oh-my-claudecode) as a common harness and configured skills and references based on Claude Code users.
+
+Sharing our individual approaches, we found similar conclusions and agreed on directions such as separating the roles of [CLAUDE.md](http://claude.md/), skills, and sub-agents, a Git strategy that distinguishes between team-shared and personal settings, and data-driven skill validation.
+
+Reference documents (Figma workflow, code pattern guides, etc.) still contain my personal opinions. Team members will freely upload and review the references they are using.
+
+It's still under construction, and concerns such as the limitations of test code, token optimization, and how to demonstrate value to team members who don't use AI are ongoing.
+
+We must clearly recognize the unreliable parts, divide what humans can do and what AI can do within the team, and aim to build the correct flow.
 
 There's still a long way to go.
 
-Challenges persist, including the limitations of test code, token optimization, ambiguous quantification, how to conduct efficient reviews, and how to demonstrate value to team members who do not utilize AI.
+The limitations of test code, token optimization, the ambiguity of quantification, how to conduct efficient reviews, and how to demonstrate value to team members who don't use AI—various concerns continue endlessly.
 
-I anticipate posting updates as my thoughts evolve.
+I suppose I'll post again if my thoughts are updated sometime...?
+
+---
