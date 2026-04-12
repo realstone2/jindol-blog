@@ -1,0 +1,168 @@
+---
+title: "2026 Q1 Retrospective (Ramblings)"
+publishedAt: "2026-04-12"
+summary: ""
+language: "en"
+tags: []
+---
+
+2026 is the year I started at a new company.
+I joined on January 12th, and as of today, exactly three months have passed, and my probation period has ended.
+As the quarter comes to an end, I decided to write some ramblings, like a diary, organized by theme.
+
+(My probation period officially ended today...)
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/340f43437bda804ba26cc6e83059b28a/824f4115.webp)
+
+---
+
+## Company
+
+### Work Retrospective
+
+I was given the mission to build a US e-commerce website in just three months, starting almost from scratch. All WBS and schedules were already provided. The schedule, with QA and feature development overlapping, was truly appalling.
+
+It would have been an absolutely impossible schedule if I hadn't used AI for parallel work.
+
+During this process, I became part of the user squad. This squad is responsible for everything related to displaying user personal information. Authentication flows, My Page development, and similar tasks are the main responsibilities.
+
+When I joined, the authentication flow had already been set up by a developer from another squad, and I took over to work on it alone. Since I wasn't familiar with the existing flow, I took the time to learn it personally while setting up `vitest`. When taking over refactoring or bug fixes, I laid down tests to prevent bugs from occurring during my work.
+
+The results produced under such tight deadlines sometimes felt personally embarrassing. However, this process forced me to think deeply about how to effectively use AI. Because I was so focused on immediate completion and had no opportunity for personal growth or technical deliberation within the company, I found myself heavily contemplating how to leverage AI effectively in development.
+
+### Parallel Work and Task Management
+
+It was quite overwhelming to simultaneously work on feature development and fix bugs from the QA of the handed-over parts. At this point, I felt the need for parallel work and tried using tools like `conductor` and also `worktree`. I had always heard that `worktree` is good for parallel work, but people only truly adopt tools when they feel the necessity themselves.
+
+Since the company doesn't use Jira cards for task management, some tasks were getting missed. While contemplating how to improve this, I created an agent that records tasks. The method is to simply pass tasks received via Slack or verbally to the agent, which then integrates with Notion to create and manage a task board. I wanted to continue the experience of exchanging tasks via Jira cards from my previous company, and this solution worked effectively, making my work much smoother.
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/340f43437bda804ba26cc6e83059b28a/5cfbd623.webp)
+
+### Reflections on the In-house Frontend Team
+
+When I first joined, I noticed many shortcomings, and I discussed them extensively with a colleague who started at the same time. After much deliberation about how much I could challenge existing decisions and whether making suggestions would be rude, I decided to set aside personal preferences as much as possible, identify only the risky areas, and brought up many agenda items during our weekly meetings.
+
+I offered many opinions on topics such as `tanstack query`'s query key management, declarative popup component conventions, considerations for increasing CSS style productivity, `search params` conventions, webview event bridge design, AI skills, and documentation management.
+
+However, most of these discussions didn't progress. The common responses were "That's good" or "I'm not sure," which left me feeling a bit disappointed. I thought a lot about how to better listen to team members' opinions, convey my own, and engage in dialogue. I wondered if the problem was the company culture itself, which isn't proactive in debate or adopting new things, or if I was simply too enthusiastic.
+
+The absence of a lead in the frontend team also seems to play a role. There are about 10 members, but without someone to lead the frontend chapter and guide discussions, it feels like opinions aren't being consolidated.
+
+In contrast, at my previous company, every decision involved intense technical discussions. To the point where I wondered if we were overthinking things or wasting time. Even the CEO commented that it was taking too long and asked if we could be more efficient, that's how excessive it was. I could empathize that from the company's perspective, it might have felt excessive and a waste of money.
+Nevertheless, this process expanded my knowledge, revealed areas I didn't know, and identified areas I needed to study. Working without such a process, without understanding the bigger picture of what went wrong, is something I believe AI cannot yet replace, making it a difficult problem.
+
+### Coffee Chats
+
+In the past, I was scared and embarrassed to ask for coffee chats, but my experience meeting many people and receiving advice through `Hanghae Plus` seems to have helped.
+
+At the company, I've also been able to actively engage in coffee chats when needed, fostering good communication with team members.
+
+In particular, I requested a coffee chat with a developer who recently joined the backend team, as I noticed their strong inclination towards leadership. We discussed concerns related to the frontend chapter, and thankfully, they already knew there was no one leading the frontend chapter and had plans to offer a lot of advice. Lightly sharing our future plans and thoughts, I felt like we could build a good team together.
+
+In the future, I should avoid dwelling on problems alone and actively request more coffee chats with team members!
+
+### Becoming a Mentor
+
+In April, an intern joined the user squad, making me feel like an unofficial mentor. (I just finished my probation today...)
+It's great to have a colleague for code reviews, but since it's a conversion-type internship, I feel a heavy responsibility knowing that the tasks I assign could lead to different evaluations for them, and my assessment might influence their outcome.
+
+I've also been having coffee chats to discuss what they're thinking and what their interests are. While I'm not an exceptional person, I'll try my best to ensure they gain something from my experiences.
+
+Given the nature of the user squad, there's a tendency to work on quite risky tasks or simple publishing and minor chores, which gives me a lot to think about. Although unofficial, this is my first time being a mentor, so it's challenging.
+
+---
+
+## Personal Studies
+
+I'm currently involved in an in-house study group, an in-house AI club, an external AI study group, and a blog writing group. I realize I've taken on too much, but if I don't do this, I feel anxious and mentally more exhausted. It seems I need to force myself into something, anything.
+
+### In-house Study Group
+
+We studied the official `react-router-v7` documentation, taking turns presenting. Next is dissecting the `tanstack query` official documentation, but just going through the official docs together sometimes feels like a homework check. I need to consider whether the value lies simply in having studied, or if we can use the study time itself more efficiently.
+
+### In-house AI Club
+
+Every Monday, we meet to discuss how we use AI within the company and to organize AI documentation for our projects. I'd like to share opinions and engage in more active debates, but it's disappointing that everyone isn't actively contributing their thoughts. I wonder how I can encourage participation and make better use of our time. I'm also wondering if I should take on a leadership role, even though I'm not confident in leading. I'm also very lacking and would prefer to be led.
+
+### AI Study Group (If unskilled developers are replaced, we're doomed)
+
+On weekends, I spend two hours a week studying AI-related topics. At first, I wondered what I could achieve in just two hours, but listening to the stories of those studying with me, I gain a lot of know-how and motivation. Consistently studying AI for two hours each time accumulates, and I definitely feel a difference compared to those who don't. I once again realized the significant impact of even a little bit of consistency.
+
+### Writing Study (Crappy Writing)
+
+I've been doing this since last year, but I haven't been able to write many articles properly. Perhaps because I lack self-confidence, writing feels a bit embarrassing and difficult. Nevertheless, with the mindset of writing something this year, I'm producing 1-2 articles per month. I believe consistency will make a difference and will continue to try.
+
+---
+
+## Daily Life
+
+### Betting with Teammates
+
+Almost every day, my teammates and I play rock-paper-scissors (one-out-of-three), where the winner, not the loser, buys coffee. It's quite fun and gives a dopamine rush, so in March, I even created a simple dashboard to record the data.
+
+I'm satisfied with my overwhelming win rate and enjoying free coffee.
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/340f43437bda804ba26cc6e83059b28a/d88dc714.webp)
+
+### Playing Futsal
+
+Futsal is my biggest source of dopamine.
+
+In March, I lost 100,000 won for drinks after a futsal goal-scoring bet with former colleagues, and last week, I bought Starbucks for a colleague after a futsal goal-scoring bet after work.
+
+It feels like I'm only losing dopamine, but... it's fun...
+
+Recently, I had to rest due to an ankle injury, and as I get older, I'm starting to worry about how long I'll be able to play futsal.
+
+### Playing Games with My Wife
+
+Recently, my wife and I suddenly started playing a mobile game called `운빨존많겜` (Unppaljonmangem).
+
+It's a popular game at the company, so I started playing it, and my wife and I ended up glued to our phones until dawn.
+It's really fun to play together, but it's highly addictive, and we've already spent about 50,000 won combined on in-app purchases, so I'm a little... worried.
+
+### Binge-watching Dragon Ball with My Wife
+
+I love Dragon Ball so much that I often gave my wife "Dragon Ball explanation sessions," and last time, I showed her on YouTube while explaining.
+Naturally, we started binge-watching it.
+
+Watching a manga I loved with my wife made for some special moments.
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/340f43437bda804ba26cc6e83059b28a/d83b8545.webp)
+
+### Going Stargazing
+
+On March 20th, my wife and I went on a 1-night, 2-day trip to Dangposeong in Yeoncheon to see the stars.
+
+We didn't see as many stars as we expected, but it was enjoyable.
+
+![IMG_2095.jpeg](https://duzswvwtwcafa.cloudfront.net/posts/340f43437bda804ba26cc6e83059b28a/5041359d.webp)
+
+### Park Hyo Shin Concert
+
+On Sunday, April 5th, I went to a Park Hyo Shin concert with a friend.
+
+My friend, who majored in practical music vocals in college, insisted that we *had* to see Park Hyo Shin before his "aging curve" hit, and I was swayed by the offer of a ride.
+
+I was surprised by his somewhat idol-like and shy personality, but his singing was truly incredible. It felt like watching a strongman show or a circus performance.
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/340f43437bda804ba26cc6e83059b28a/3428e441.webp)
+
+---
+
+## Reflecting on My Tendencies
+
+When I was about 22, I went on vacation from the military and traveled alone to Jeju Island, where I climbed an `oreum` (volcanic cone). It was a very hot summer day, and from below, it looked so tall and magnificent that I climbed, thinking how amazing it would be at the top. With an excited heart, I sweated profusely as I climbed, but when I looked around at the top, I felt no special emotion.
+It was then that I first thought our lives are similar. It seems like if you work hard towards a higher goal and achieve it, it should be very special, but I don't change much.
+This time feels similar. Even though I know it, I'll probably still sweat and strive towards new, higher goals, but I don't expect much to change. Knowing I might be disappointed, the excitement and the feeling that things will become special seem to be the driving force that makes me live diligently.
+I've been thinking, "I worked so hard to get into a big company, so why does life still feel so hard and not improving?" and that's why I've rambled on.
+Of course, the company itself is naturally better since I moved from a startup to a large corporation; the benefits are good, my self-esteem has increased, and there have certainly been areas of development. Compared to before, it's always better, but perhaps my inability to be easily satisfied is just my personality. I have many complaints. I always whine.
+Sometimes I think it helps me become a better person, and sometimes I think it's not good. It's difficult.
+
+---
+
+## Conclusion
+
+I'm not sure if I should call this a quarterly review or just ramblings, but writing it out like this helps me recall what I've been thinking about and what I've done, which feels good. I should continue writing these in the future.
+
+---
