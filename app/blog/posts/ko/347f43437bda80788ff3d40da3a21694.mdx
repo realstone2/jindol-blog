@@ -1,0 +1,183 @@
+---
+title: "React Native에서 WebView를 Native처럼 사용해보자! (2) 웹과 앱에서 zod로 type safe하게 event를 주고 받기"
+publishedAt: "2024-10-03"
+summary: ""
+language: "ko"
+tags: []
+---
+
+
+message evnet를 주고 받을 때 string message로만 주고 받을 수 있습니다.
+이 때 다양한 event를 주고 받을 때, type을 safe하게 받지 않으니 어려움이 있었습니다. 해당 문제를 해결한 내용을 소개해보겠습니다!
+
+
+## 이벤트 처리 방법
+
+
+이슈 설명에 앞서서 이벤트 처리에 대한 부분을 공유하려고 합니다.
+
+- React Native
+postMeaage : 메세지 보낼 때
+onMessage : 메세지 받을 때
+- Webview
+postMeaage : 메세지 보낼 때
+addEventListener('message') : 메세지 받을 때
+
+react native와 web 간의 통신은 postMessage를 메서드를 통해서 요청을 하고 웹에서는 addEventListener('message')와 앱에서는 onMessage 메서드를 통해서 통신을 주고 받습니다.
+
+
+## 이벤트 처리시 이슈
+
+
+이 때 통신 과정에서 많은 string으로 밖에 값을 보낼 수 없는데 각각 주고 받을 이벤트가 많을 경우에는 type safe하게 관리하지 않으면 휴먼에러가 발생하기 쉬웠습니다.
+
+
+예를 들어보면 앱에서 웹으로 아래와 같은 event를 보냈을 때 입니다.
+
+- app
+
+```typescript
+webviewRef.current?.postMessage(
+        JSON.stringify({
+          type: WEBVIEW_EVENT_TYPE.AUTH,
+          data: {
+            accessToken: tokenService.getAccessToken() ?? '',
+            refreshToken: tokenService.getRefreshToken() ?? '',
+          },
+        } satisfies AuthSchemaType),
+     )
+```
+
+
+아래 웹에서는 AuthSchemaType으로 as로 타입을 단언해서 사용해야 됩니다.
+
+- web
+
+```typescript
+React.useEffect(() => {
+    if (window.ReactNativeWebView == null) {
+      return;
+    }
+
+    const handleMessage = (e: Event) => {
+      if (e instanceof MessageEvent) {
+        const event = JSON.parse(e.data) as AuthSchemaType
+
+        // auth 이벤트 뿐만 아니라 다른 event가 들어올 수 있으니 타입 단언을 할경우 위험합니다.
+      }
+    };
+
+    document.addEventListener('message', handleMessage);
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      document.removeEventListener('message', handleRefresh);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [onRefresh]);
+```
+
+
+다른 플랫폼끼리의 이벤트 통신을 하는데 타입 단언을 사용하는 것은 정말 위험합니다.
+
+
+타입 단언하고 data를 사용하려고 하는데 null safe 되어 있지 않은 타입이라 그대로 사용하면 app 자체가 크래시가 날 수도 있는 상황입니다.
+
+
+## 해결 방안
+
+
+런타임에서 타입을 safe하게 관리하기 위한 방법의 대표적으로는 zod 스키마를 사용하는 것입니다.
+
+
+그래서 아래처럼 zod를 사용하여 웹과 앱에서 사용할 이벤트를 스키마로 구성해보았습니다.
+
+- schema
+
+```typescript
+export const authSchema = z.object({
+  type: z.literal(WEBVIEW_EVENT_TYPE.AUTH),
+  data: z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+  }),
+});
+
+export const routerSchema = z.object({
+  type: z.literal(WEBVIEW_EVENT_TYPE.ROUTER),
+  data: z.object({
+    url: z.string().optional(),
+    goBack: z.boolean().optional(),
+  }),
+});
+
+export const webViewEventSchema = z.union([
+  authSchema,
+  routerSchema,
+]);
+
+
+export type AuthSchemaType = z.infer<typeof authSchema>;
+export type RouterSchemaType = z.infer<typeof routerSchema>;
+```
+
+
+웹이나 앱에서 이제 이벤트를 받을 때 safe하게 이벤트를 검증하여 안전하게 사용할 수 있습니다.
+
+
+```typescript
+React.useEffect(() => {
+    if (window.ReactNativeWebView == null) {
+      return;
+    }
+
+    const handleMessage = (e: Event) => {
+       if (e instanceof MessageEvent) {
+        try {
+          const webViewEvent = webViewEventSchema.safeParse(JSON.parse(e.nativeEvent.data));
+
+          if (webViewEvent.error) {
+            throw new Error('정의되지 않은 이벤트');
+          }
+
+          if (webViewEvent.data.type === 'ROUTER') {
+          	//... ROUTER event 처리
+            return;
+          }
+
+          if (webViewEvent.data.type === 'AUTH') {
+          	//... AUTH event 처리
+            return;
+          }
+
+
+          return;
+        } catch (err) {
+          //TODO: 에러처리
+          return;
+        }
+      }
+    };
+
+    document.addEventListener('message', handleMessage);
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      document.removeEventListener('message', handleRefresh);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [onRefresh]);
+```
+
+
+이제 안전하게 event message data를 사용할 수 있게 되었습니다!
+
+
+## 마무리
+
+
+위에처럼 두개만 사용할 때는 휴먼에러가 발생할 일이 적지만, 실제 개발시에는 이벤트를 다룰게 여러가지가 있어서 이벤트 스키마 만들어서 사용하게 아주 유용하였습니다!
+
+
+하나의 아이디어로 작성한 글이지만 zod가 아니더라도 이벤트 스키마 구성은 필수라고 생각합니다.
+

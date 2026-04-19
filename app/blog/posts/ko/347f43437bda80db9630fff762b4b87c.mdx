@@ -1,0 +1,285 @@
+---
+title: "docker로 github action self hosted runner를 만들어보자!"
+publishedAt: "2024-08-18"
+summary: ""
+language: "ko"
+tags: []
+---
+
+
+안녕하세요. 프론트엔드 개발자 진돌입니다.
+회사에서 github 자체 runner로 action을 돌리는 것에 과부하가 생겨 self hosted를 구성한 이야기를 작성해보겠습니다.
+
+
+## 현재 상황
+
+
+자체 깃허브 러너는 linux 2코어를 사용중입니다.
+
+
+간단한 빌드만 진행을 해도 여러 사람이 pr을 올리다보니 기다려야되는 시간이 너무 길어집니다.
+
+
+느린 성능을 개선하려면 두배로 가격을 점점 늘려야되는데, 그것도 성능이 아무리 좋아져도 큐방식으로 동작하는 빌드러너 특성상 아쉽습니다.
+
+
+또한 무료로 사용할 수 있는 시간을 항상 넘기고 있어서 요금도 추가로 계속 나가고 있는 문제도 있습니다.
+
+
+아래는 github action 비용입니다.
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/84ce69e0-7b78-4b44-9e8c-a8f3560512d1/image.png)
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/f9bae392-6b7a-40fa-adb3-c21fb989905a/image.png)
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/e7c68ebe-c332-472c-a46c-8cf88daab66a/image.png)
+
+
+## 계획
+
+
+계획은 다음과 같습니다.
+
+1. 회사에서 놀고 있는 윈도우 컴퓨터들을 리눅스서버로 교체한다.
+2. github runner를 연결해주는 도커파일을 만든다.
+3. 리눅스 서버들에서 도커를 띄워 만들어준 github runner를 띄워준다.
+4. 여러개의 자체 runner가 구성되어서 속도가 빨라져서 행복해진다.
+
+크게 위에 순서대로의 계획을 하였습니다.
+
+
+놀고 있는 컴퓨터들을 필요에따라 도커파일로 바로바로 러너를 추가할 수 있으니 편리할 것 같습니다.
+
+
+## self hosted 테스트
+
+
+일단은 도커에 실행에 앞서 self hosted 생성 자체 테스트를 진행해보았습니다.
+
+
+깃허브 액션에 러너탭에 들어가면 러너 추가에 대한 내용이 나옵니다.
+깃허브에 적힌 그대로 실행하면 러너추가는 무리 없이 진행이 가능합니다.
+
+
+```plain text
+# Create a folder
+$ mkdir actions-runner && cd actions-runnerCopied!# Download the latest runner package
+$ curl -o actions-runner-linux-x64-2.317.0.tar.gz -L <https://github.com/actions/runner/releases/download/v2.317.0/actions-runner-linux-x64-2.317.0.tar.gz#> Optional: Validate the hash
+$ echo "9e883d210df8c6028aff475475a457d380353f9d01877d51cc01a17b2a91161d  actions-runner-linux-x64-2.317.0.tar.gz" | shasum -a 256 -c# Extract the installer
+$ tar xzf ./actions-runner-linux-x64-2.317.0.tar.gz
+```
+
+
+```plain text
+# Create the runner and start the configuration experience
+$ ./config.sh --url <https://github.com/>... --token <Token># Last step, run it!
+$ ./run.sh
+```
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/f14f907f-63d6-4e21-8b5b-72c6d4f31e71/image.png)
+
+
+github action에서 self hosted를 실행할 때는 해당 라벨에 적혀있는 것들을 넣어주면 실행이 가능합니다.
+
+
+```yaml
+jobs:
+  job1:
+    name: job1
+    runs-on: [self-hosted, Linux, test]
+```
+
+
+self hosted가 똑같은 것이 여러개 있을 경우에는 잡이 비어있는 runner에 자동으로 핸들링 해주게 됩니다.
+
+
+이제 도커로 잔뜩 러너를 만들어서 넣어주면 되겠습니다.
+
+
+## docker file 만들기
+
+
+docker file을 그대로 만들면 간단하겠군요.
+그대로 만들보겠습니다.
+
+
+### 깃허브 설명 그대로 만들기
+
+
+깃허브 설명에 적혀있는 그대로 실행하도록 도커파일과, 컨테이너가 실행되었을 때 ENTRYPOINT에서 실행시켜줄 쉘 파일을 추가해주도록 하겠습니다.
+
+- [start.sh](http://start.sh/)
+
+```shell
+#
+./config.sh --url <https://github.com/looko-corp> --token <token>
+
+./run.sh
+```
+
+- dockerfile
+
+```shell
+FROM ubuntu:22.04
+
+RUN  apt-get clean
+RUN  apt-get update
+
+RUN apt-get install --reinstall tar
+
+RUN apt-get update && \\
+    apt-get install -y \\
+    curl \\
+    tar \\
+    gzip \\
+    jq \\
+    git \\
+    libicu-dev
+
+RUN  mkdir -p /actions-runner
+
+COPY start.sh /actions-runner/start.sh
+
+RUN chmod +x /actions-runner/start.sh
+
+RUN useradd -m runner
+
+RUN chown -R runner:runner /actions-runner
+
+USER runner
+WORKDIR /actions-runner
+
+RUN curl -o actions-runner-linux-x64-2.317.0.tar.gz -L <https://github.com/actions/runner/releases/download/v2.317.0/actions-runner-linux-x64-2.317.0.tar.gz>
+RUN echo "9e883d210df8c6028aff475475a457d380353f9d01877d51cc01a17b2a91161d  actions-runner-linux-x64-2.317.0.tar.gz" | shasum -a 256 -c
+
+RUN tar xzf ./actions-runner-linux-x64-2.317.0.tar.gz
+
+RUN ls -la /actions-runner
+
+# ENTRYPOINT 설정
+ENTRYPOINT ["/actions-runner/start.sh"]
+```
+
+
+그대로 만들어주고 이미지를 생성후 빌드를 돌려보니까 잘 생성이 되는 것처럼 보일 수 있습니다.
+
+
+하지만 몇시간이 지난후 다시 해보면 아래 결과를 보게 됩니다.
+
+
+```shell
+{"message":"Not Found","documentation_url":"<https://docs.github.com/rest","status":"404>"}
+```
+
+
+### 왜?
+
+
+깃허브 설명에 적혀있는 ./config.sh 을 실행시킬 때 사용하는 토큰이 만료기간이 있는 것입니다.
+만료가 되어서 아예 404 에러 response를 주고 있는 상황입니다.
+
+
+### 토큰을 동적으로 받아서 하기
+
+
+이를 위해서는 깃허브에서 제공해주는 rest api 들을 사용할 수 있었습니다.
+[https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization](https://docs.github.com/en/rest/actions/self-hosted-runners?apiVersion=2022-11-28#create-a-registration-token-for-an-organization)
+
+
+많은 api 들이 있는데 그중에서 제가 사용해야될 것은 runner 생성을 위한 조직 토큰을 받는 API 입니다. (참고로 조직 깃허브 API를 사용하기 위해서는 Fine-grained personal access tokens 이 있어야합니다)
+
+
+```shell
+curl -L  -X POST  -H "Accept: application/vnd.github+json"   -H "Authorization: Bearer <token...>"   -H "X-GitHub-Api-Version: 2022-11-28"   <https://api.github.com/orgs/><corp>/actions/runners/registration-token
+```
+
+
+위에 API에서 조직 url과 token을 넣어주니 잘 받아오는 것을 확인할 수 있었습니다.
+
+
+이제 해당 API를 받아서 사용하는 쉘 스크립트로만 변경해주면 됩니다.
+
+
+```shell
+#!/bin/bash
+
+response=$(curl -L   -X POST   -H "Accept: application/vnd.github+json"   -H "Authorization: Bearer <token>"   -H "X-GitHub-Api-Version: 2022-11-28"   <https://api.github.com/orgs/><corp>/actions/runners/registration-token)
+
+token=$(echo $response | jq -r '.token')
+
+echo $token
+./config.sh --url <https://github.com/looko-corp> --token $token
+
+./run.sh
+```
+
+
+이제 다시 dockerFile로 이미지를 생성후 컨테이너를 만들어보겠습니다.
+
+
+```shell
+#이미지 생성
+docker build -t runner-image .
+
+#컨테이너 실행
+docker run -d runner-image
+```
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/d043d12d-3e1b-4fc3-b324-6300cefa3e34/image.png)
+
+
+생성이 아주 잘 되었군요.
+
+
+추가적으로 한 리눅스 서버에 두개의 러너씩 띄울 계획인데, dockerFile로 이미지 생성 컨테이너 생성까지 매번 하기 귀찮으니 컴포즈 파일을 구성하였습니다.
+
+- docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+  actions-runner-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: actions-runner-container-1
+    environment:
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+    entrypoint: ["/actions-runner/start.sh"]
+    user: runner
+    working_dir: /actions-runner
+
+  actions-runner-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: actions-runner-container-2
+    environment:
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+    entrypoint: ["/actions-runner/start.sh"]
+    user: runner
+    working_dir: /actions-runner
+```
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/93922352-b566-41ab-8959-25a1791d1739/image.png)
+
+
+이제 필요할 때마다 해당 도커파일로 생성해주면 됩니다!
+
+
+## 마무리
+
+
+여기까지 도커로 github self-hosted runner 만드는 과정을 작성해보았습니다.
+다음에 시간 측정까지할 기회가 있으면 추가로 작성해보겠습니다.
+
+
+감사합니다.
+

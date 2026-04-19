@@ -1,0 +1,181 @@
+---
+title: "Let's Use WebView in React Native Like Native! (2) Type-Safe Event Communication Between Web and App Using Zod"
+publishedAt: "2024-10-03"
+summary: ""
+language: "en"
+tags: []
+---
+
+
+When sending and receiving message events, only string messages can be exchanged. At this time, when exchanging various events, it was difficult to receive them in a type-safe manner. I'd like to introduce how I solved this problem!
+
+
+## Event Handling Method
+
+
+Before explaining the issue, I'd like to share how events are handled.
+
+- React Native
+postMeaage: When sending messages
+onMessage: When receiving messages
+- Webview
+postMeaage: When sending messages
+addEventListener('message'): When receiving messages
+
+Communication between React Native and web is requested via the `postMessage` method, and communication is exchanged via `addEventListener('message')` in the web and `onMessage` method in the app.
+
+
+## Issues When Handling Events
+
+
+During this communication process, values can only be sent as strings, and if there are many events to send and receive, human errors were prone to occur if not managed in a type-safe manner.
+
+
+For example, when an event like the following is sent from the app to the web.
+
+- app
+
+```typescript
+webviewRef.current?.postMessage(
+        JSON.stringify({
+          type: WEBVIEW_EVENT_TYPE.AUTH,
+          data: {
+            accessToken: tokenService.getAccessToken() ?? '',
+            refreshToken: tokenService.getRefreshToken() ?? '',
+          },
+        } satisfies AuthSchemaType),
+     )
+```
+
+
+In the web code below, the type must be asserted using `as` with `AuthSchemaType`.
+
+- web
+
+```typescript
+React.useEffect(() => {
+    if (window.ReactNativeWebView == null) {
+      return;
+    }
+
+    const handleMessage = (e: Event) => {
+      if (e instanceof MessageEvent) {
+        const event = JSON.parse(e.data) as AuthSchemaType
+
+        // Since other events can come in besides auth events, type assertion is dangerous.
+      }
+    };
+
+    document.addEventListener('message', handleMessage);
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      document.removeEventListener('message', handleRefresh);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [onRefresh]);
+```
+
+
+Using type assertion for event communication between different platforms is truly dangerous.
+
+
+If you assert the type and try to use `data`, since it's not a `null safe` type, using it as is could cause the app itself to crash.
+
+
+## Solution
+
+
+A representative method for managing types safely at runtime is to use `zod` schemas.
+
+
+So, as shown below, using `zod`, I configured the events to be used in the web and app as schemas.
+
+- schema
+
+```typescript
+export const authSchema = z.object({
+  type: z.literal(WEBVIEW_EVENT_TYPE.AUTH),
+  data: z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+  }),
+});
+
+export const routerSchema = z.object({
+  type: z.literal(WEBVIEW_EVENT_TYPE.ROUTER),
+  data: z.object({
+    url: z.string().optional(),
+    goBack: z.boolean().optional(),
+  }),
+});
+
+export const webViewEventSchema = z.union([
+  authSchema,
+  routerSchema,
+]);
+
+
+export type AuthSchemaType = z.infer<typeof authSchema>;
+export type RouterSchemaType = z.infer<typeof routerSchema>;
+```
+
+
+Now, when receiving events in the web or app, events can be validated safely and used securely.
+
+
+```typescript
+React.useEffect(() => {
+    if (window.ReactNativeWebView == null) {
+      return;
+    }
+
+    const handleMessage = (e: Event) => {
+       if (e instanceof MessageEvent) {
+        try {
+          const webViewEvent = webViewEventSchema.safeParse(JSON.parse(e.nativeEvent.data));
+
+          if (webViewEvent.error) {
+            throw new Error('Undefined event');
+          }
+
+          if (webViewEvent.data.type === 'ROUTER') {
+          	//... ROUTER event 처리
+            return;
+          }
+
+          if (webViewEvent.data.type === 'AUTH') {
+          	//... AUTH event 처리
+            return;
+          }
+
+
+          return;
+        } catch (err) {
+          //TODO: 에러처리
+          return;
+        }
+      }
+    };
+
+    document.addEventListener('message', handleMessage);
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      document.removeEventListener('message', handleRefresh);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [onRefresh]);
+```
+
+
+Now, `event message data` can be used safely!
+
+
+## Conclusion
+
+
+While human errors are less likely to occur when using only two as above, in actual development, there are various events to handle, so creating and using event schemas was very useful!
+
+
+Although this post was written based on a single idea, I believe that event schema configuration is essential, even if not using `zod`.

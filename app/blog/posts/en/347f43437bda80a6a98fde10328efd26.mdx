@@ -1,0 +1,149 @@
+---
+title: "Basic Cache Knowledge for Frontend Developers"
+publishedAt: "2024-08-25"
+summary: ""
+language: "en"
+tags: []
+---
+
+
+Hello. I'm Jindo, a frontend developer.
+
+
+Client-side developers deal with various types of caches, including server state caches, HTTP private caches (such as browser caches), and HTTP public caches (such as CDNs).
+
+
+Today, I'll write an article summarizing these topics.
+
+
+# Caching via HTTP Headers
+
+
+HTTP resource caching is managed via the _**Cache-Control**_ header, and broadly categorized into _**public cache**_ and _**private cache**_ based on the caching location.
+[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
+
+
+### Private Cache
+
+
+Private cache is also referred to as client cache. As the name suggests, client applications use HTTP response header values to cache resources.
+Web browsers cache data in memory or on disk according to these values.
+
+
+### Setting Cache Expiration
+
+
+_**Cache-Control max-age=(seconds)**_
+
+
+You can set the cache duration for a resource using this value.
+As long as the cache is valid, the browser will retrieve the cached data.
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/e5155e3e-14d3-4203-a857-ae178f55bc22/image.png)
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/070db873-0a3d-4822-8cc8-5d32ad5f8b86/image.png)
+
+
+The images above show the HTTP communication data for a video thumbnail image displayed on YouTube.
+
+
+As indicated in the image below, stating that it's retrieved from the disk cache, the image will be fetched from the disk cache for 7200 seconds, as specified by the `max-age` value.
+
+
+Until this cache time expires, even if the value changes on the server, the valid cache cannot be cleared, so it must be set carefully.
+
+
+### Cache Revalidation
+
+
+If the same data is retrieved even after the cache expires, it would be quite inefficient.
+HTTP headers for data revalidation also exist, and based on this validation, it's decided whether to use cached data or fetch new data from the server.
+HTTP headers for revalidation include the following:
+
+1. Last-Modified
+Specifies the last modification time of the data. If the data has not changed, it instructs the client to use the cached data with a 304 status, without providing a response body.
+2. ETag
+Provides an arbitrary tag value for the data. Depending on whether the tag value has changed, it instructs the client to use the cached data with a 304 status, without providing a response body.
+
+In such cases, for data like images which can be large, only the header values are sent, allowing for faster communication with less data and enabling the use of cached data.
+
+
+### Public Cache
+
+
+Public cache refers to caching on proxy servers like `CDN`s or `cloud-front`.
+When data is cached on a proxy server, that cached value applies to all clients requesting that resource.
+
+
+# React Cache
+
+
+Similarly, `React` applications also utilize caches handled by web browsers through basic `http` headers.
+In addition, caching is also managed through server state management libraries like [Tanstack(react-query)](https://tanstack.com/) and [SWR](https://swr.vercel.app/ko), which are essential nowadays.
+
+
+Both involve cached data, which can be a bit confusing, but their use cases are slightly different.
+
+
+### Server State Management Libraries
+
+
+These are libraries for managing server state, with the client as the primary agent.
+They cache data itself, such as order lists or user information lists, allowing the client to decide whether to refetch that cached data.
+They are used to cache data related to `url`s for fetching images, rather than caching binary data like images themselves.
+
+
+### HTTP Cache
+
+
+The server is the primary agent for managing this cache.
+Browsers and other clients manage the cache according to the server's `http` response headers.
+It's used to cache the files themselves, not the data state.
+e.g., `html`, `js`, `image`, etc.
+
+
+# React Native Cache
+
+
+The caching concept is similar to `React`.
+The difference is that since it's not a browser environment, `http` cache is not automatically provided.
+
+
+Does this mean we don't need `private cache`?
+
+
+### What if only public cache is used?
+
+
+To put it simply, using only `public cache` is not good for cost or usability.
+
+
+If only caches on `CDN`s are used, `http` requests are made to fetch cached data from the `CDN` server itself.
+Although cached data is retrieved, the `http` requests to fetch that cached data are repeated.
+Requesting images every time they are displayed at the application level negatively impacts both image loading speed and cost.
+
+
+### What if private cache is used together?
+
+
+Data from the `CDN` is cached and used within the application.
+If someone has already requested and `public cache`d the data, that cached data will be retrieved quickly.
+Next, once the data is cached in the application, using images within the app again will result in even faster image display.
+
+
+### Conclusion
+
+
+`private cache` and `public cache` are both necessary, and to achieve this, local caching using `async storage` based on response values must be implemented directly.
+Since various libraries exist for this type of caching, both `private cache` and `public cache` should be implemented using these libraries.
+
+
+# Conclusion
+
+
+I've summarized the use cases of `public` (client), `private` (`CDN`), and server state libraries in `React` and `React Native`.
+
+
+Thank you.

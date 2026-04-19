@@ -1,0 +1,423 @@
+---
+title: "Getting Started with ReAnimated through Official Examples"
+publishedAt: "2023-01-10"
+summary: ""
+language: "en"
+tags: []
+---
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/878fe495-a78c-4656-b537-92a1a761a203/image.png)
+
+
+Hello.
+Today, I will explain the content I've briefly summarized after reviewing the official documentation for Reanimated 2.
+
+
+# ReAnimated?
+
+
+In a single sentence, it is a React Native library that creates animations and interactions executed on the UI thread.
+
+
+# Background
+
+
+Doesn't React Native itself provide animation? Of course, it does.
+React Native officially provides the `Animated API`.
+
+
+However, the `Animated API` thread communicates asynchronously with the UI thread, and when the `JS thread` becomes overloaded, frame drops can occur.
+
+
+Therefore, `Reanimated` emerged to handle all heavy animation and interaction tasks directly on the `UI thread`.
+
+
+# Reanimated V2 Concepts
+
+
+## worklets
+
+
+They create an auxiliary `JS` context on the `UI thread`, allowing `javascript` functions to be executed.
+
+
+(In other words, they undergo a separate compilation process.)
+
+
+In addition to specified arguments, they capture the defined context.
+
+- How to create
+
+```javascript
+const width = 135.5;
+
+function otherWorklet() {
+  'worklet';
+  console.log('Captured width is', width);
+}
+```
+
+
+You just need to insert the `'worklet'` directive inside a function within your `JS` code.
+
+
+However!
+
+
+In practice, there's rarely a need to explicitly create `worklets`.
+Even in official examples, there are very few instances where `worklets` are used directly.
+
+
+You can create `worklets` and use them to detect changes in `SharedValue` by using the following hooks:
+
+
+**useAnimatiedStyle, useDerivedValue, useAnimatedGestureHandler**
+
+
+## SharedValue
+
+
+It is a value that can be shared between the `JS` and `UI Threads`. It supports all `JS` types.
+
+
+It is optimized for reading on the `UI thread`. It executes synchronously only on the `UI thread`.
+
+
+On the `JS thread`, it is processed asynchronously.
+(This means that on the `JS thread`, even if the value changes, you will see the previous value until rendering occurs!)
+
+
+```javascript
+const offset = useSharedValue(0);
+```
+
+
+Whenever the `offset SharedValue` changes, the dependent `worklet` will be executed.
+
+
+## Simple Example
+
+
+```javascript
+const Box = React.memo(function Box() {
+  const offset = useSharedValue(0);
+
+  const [render, setRender] = useState(0);
+
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      transform: [{translateX: offset.value}],
+    };
+  });
+
+  return (
+    <>
+      <Animated.View style={[styles.box, animatedStyles]} />
+      <Button
+        onPress={() => (offset.value = Math.random() * 255)}
+        title="Move"
+      />
+    </>
+  );
+});
+```
+
+
+![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/de419dbd-0dc5-4520-b33c-901220190063/image.gif)
+
+
+We created a shared value using `useSharedValue`,
+and we are changing its value randomly each time the button is clicked.
+
+
+A `worklet` was created using `useAnimatedStyle`, which was briefly mentioned above.
+Therefore, whenever the `SharedValue` used within it changes, the method created by `useAnimatedStyle` is called, and the style is updated.
+
+
+However, it feels somewhat choppy, not quite like a smooth animation ㅡㅅㅡ
+Let's customize it!!
+
+
+## Custom
+
+
+[https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/animations](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/animations)
+
+
+For more detailed explanations of each method when in use, it is recommended to refer to the official documentation. We will only provide a brief overview of their functionality here.
+
+
+### utility methods
+
+
+First, these methods help with the motion itself.
+They provide functionalities that ensure smooth, continuous transitions without choppiness.
+
+- withTiming
+
+```javascript
+<Button
+	onPress={() =>
+		(offset.value = withTiming(Math.random() * 255, {
+			duration: 3000,
+			easing: Easing.out(Easing.exp),
+		}))}
+	title="Move"
+/>
+```
+
+
+![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/d2e57716-1e6d-4185-a6aa-39ffad22b73e/image.gif)
+
+- withSpring
+
+```javascript
+<Button
+	onPress={() =>
+  		(offset.value = withSpring(Math.random() * 255))}
+	title="Move"
+/>
+```
+
+
+![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/04eeb39b-0ecd-4988-9321-5b0a49063a68/image.gif)
+
+
+### animation modifiers
+
+
+There are functions that allow animations to be repeated or combined into a single event.
+
+
+```javascript
+<Button
+        onPress={() =>
+          (rotation.value = withSequence(
+            withTiming(-10, {duration: 50}),
+            withRepeat(withTiming(20), 6, true),
+            withTiming(-10, {duration: 50}),
+            withTiming(0, {duration: 100}),
+          ))
+        }
+        title="rotate"
+      />
+```
+
+
+![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/66c61163-9412-41b4-a753-4b28ded05ec2/image.gif)
+
+
+## Event
+
+
+Next is the `Event` related section!
+
+
+`ReAnimated` handles events using the `react-native-gesture-handler` package.
+
+
+Before diving into the event section, I'll briefly explain `gesture handlers`.
+
+
+Various `gesture handlers` exist, such as `TapGestureHandler` and `PanGestureHandler`. The gesture I will demonstrate in this explanation is `PanGestureHandler`.
+
+
+```plain text
+<PanGestureHandler onGestureEvent={eventHandler}><Animated.View style={[styles.ball, uas]} /></PanGestureHandler>
+```
+
+- useAnimatedGestureHandler
+
+This hook allows you to define `worklets` for the following three types of gestures that occur:
+
+
+![image.png](https://velog.velcdn.com/images/yeojinseuk/post/fa52c4bd-631b-4b0f-894d-01c7363b83a3/image.png)
+
+
+You can create them using `useAnimatedGestureHandlers` as shown below.
+
+
+```plain text
+const eventHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    GestureCtxType
+  >({
+    onStart: (event, ctx) => {
+      pressed.value = true;
+      ctx.startX = x.value;
+      ctx.startY = y.value;
+    },
+    onActive: (event, ctx) => {
+      x.value = ctx.startX + event.translationX;
+      y.value = ctx.startY + event.translationY;
+    },
+    onEnd: (event, ctx) => {
+      pressed.value = false;
+    },
+  });
+```
+
+
+Each `worklet` provides `event` and `context` arguments.
+
+
+`event` contains information about the triggered event.
+
+
+`context` is a `javascript Object` that can be shared across `worklets` for a given gesture.
+
+
+### Event Example
+
+
+Let's create an example that uses all the `gesture events`, `worklets`, and `SharedValue` concepts explained above!
+
+
+![image.gif](https://velog.velcdn.com/images/yeojinseuk/post/61ce6e2e-08cc-48fe-a873-3eb4a2004ac9/image.gif)
+
+
+Do you have an idea of how to build it?
+
+
+Let's think together about what we need, one by one.
+
+1. Gesture event
+2. A `SharedValue` to determine if it's `pressed`
+3. `SharedValue`s for the x and y axes to store the `transform` position based on the event location
+
+We can break it down into these three points!
+
+1. Creating `SharedValue`s and a `worklet`
+
+```plain text
+const pressed = useSharedValue(false);
+
+  const x = useSharedValue(0);
+  const y = useSharedValue(0)
+
+  const animationStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: pressed.value ? 'tomato' : 'yellow',
+      transform: [{translateX: x.value}, {translateY: y.value}],
+    };
+  });
+```
+
+
+As mentioned above, we created `SharedValue`s to store the `pressed` state and the `x`, `y` coordinates. We also created a `worklet` method using the `useAnimatedStyle()` hook. Now, whenever the `SharedValue` changes, the `view` with this animation style will update accordingly.
+
+1. Creating the `gesture event handler` `view`
+
+```plain text
+return (
+    <PanGestureHandler onGestureEvent={eventHandler}><Animated.View style={[styles.ball, animationStyle]} /></PanGestureHandler>);
+```
+
+
+We created an `Animated.View` wrapped by `PanGestureHandler`.
+
+1. Creating the `event handler` method
+
+```plain text
+const eventHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    GestureCtxType
+  >({
+    onStart: (event, ctx) => {
+      pressed.value = true;
+      ctx.startX = x.value;
+      ctx.startY = y.value;
+    },
+    onActive: (event, ctx) => {
+      x.value = ctx.startX + event.translationX;
+      y.value = ctx.startY + event.translationY;
+    },
+    onEnd: (event, ctx) => {
+      pressed.value = false;
+    },
+  });
+```
+
+
+We created the method using `useAnimatedGestureHandler`, specifying the types for `PanGestureHandlerGestureEvent` and the `context` value to be shared.
+
+
+In `onStart`, which is triggered on click, we set the `pressed` value to `true` and stored the initial `x`, `y` coordinates in the shared `context`.
+
+
+In the `onActive` function, which is called whenever the `view` is moved while being pressed, we continuously update the current `event` coordinates in the `context` value.
+
+
+In `onEnd`, which occurs when the hand is lifted, we set the `pressed value` to `false`.
+
+
+By doing this, the `pressed` state changes the color, and as the `x`, `y` coordinates change with movement while pressed, the `view`'s position also changes, completing the animation.
+
+
+Below is the complete code.
+
+
+```plain text
+type GestureCtxType = {
+  startX: number;
+  startY: number;
+};
+
+export const AnimationStep2 = React.memo(function AnimationStep2() {
+  return <EventsExample />;
+});
+
+const EventsExample = () => {
+  const pressed = useSharedValue(false);
+
+  const x = useSharedValue(0);
+  const y = useSharedValue(0);
+
+  const animationStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: pressed.value ? 'tomato' : 'yellow',
+      transform: [{translateX: x.value}, {translateY: y.value}],
+    };
+  });
+
+  const eventHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    GestureCtxType
+  >({
+    onStart: (event, ctx) => {
+      pressed.value = true;
+      ctx.startX = x.value;
+      ctx.startY = y.value;
+    },
+    onActive: (event, ctx) => {
+      x.value = ctx.startX + event.translationX;
+      y.value = ctx.startY + event.translationY;
+    },
+    onEnd: (event, ctx) => {
+      pressed.value = false;
+    },
+  });
+  return (
+    <PanGestureHandler onGestureEvent={eventHandler}><Animated.View style={[styles.ball, animationStyle]} /></PanGestureHandler>);
+};
+
+const styles = StyleSheet.create({
+  ball: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'black',
+    marginTop: 10,
+  },
+});
+```
+
+
+### Conclusion
+
+
+Although this was a very simple summary following the tutorial process from the official documentation, I hope it was helpful to someone.
+
+
+Thank you for reading.

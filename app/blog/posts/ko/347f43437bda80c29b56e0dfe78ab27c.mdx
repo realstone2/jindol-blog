@@ -1,0 +1,271 @@
+---
+title: "[디자인패턴] Return Component Hook Pattern"
+publishedAt: "2024-08-04"
+summary: ""
+language: "ko"
+tags: []
+---
+
+
+![image.webp](https://velog.velcdn.com/images/yeojinseuk/post/454e40de-5662-4edd-aa96-6ea8ba70e152/image.webp)
+
+
+안녕하세요. 프론트개발자 진돌입니다.
+오늘은 컴포넌트를 return하는 훅 패턴을 공유해보려고 합니다.
+
+
+## 어떤 패턴인가요?
+
+
+보통 hook에서는 그냥 비즈니스 로직을 담아서 상태를 return을 해주는 식으로 많이 사용합니다. (useForm, useQuery 등.. )
+
+
+컴포넌트를 return하는 패턴은 말그대로 컴포넌트도 함께 return 해주는 hook 입니다.
+
+
+```javascript
+const {Modal, handleModal} = useModal();
+```
+
+
+비즈니스 로직을 숨기는 용도로 사용하거나, 비스니스 로직과 상당히 밀접한 관련이 있는 컴포넌트를 묶는 용도로 사용할 수 있습니다.
+
+
+## 장점
+
+1. 비즈니스 로직을 캡슐화하여 불필요한 컴포넌트를 노출시키지 않아도 된다.
+2. 비즈니스 로직과 컴포넌트를 강제로 묶어서 파편화 되지 않게 한다.
+
+제가 겪은 사례와 toss, kakao에서 사용하고 있는 코드를 통해 소개해드리도록 하겠습니다.
+
+
+### toss 사례
+
+
+[https://github.com/toss/slash/tree/main/packages/react/use-funnel](https://github.com/toss/slash/tree/main/packages/react/use-funnel)
+일단 토스에서 사용하는 패턴을 소개해보겠습니다.
+
+- toss useFunnel hook
+
+```typescript
+const [Funnel, setStep] = useFunnel(['enter name', 'enter social security number', 'done'] as const)
+
+return (
+  <Funnel>
+    <Funnel.Step name="enter name">
+      <EnterNameStep /> // Render when ?funnel-step="enter name"
+    </Funnel.Step>
+
+    <Funnel.Step name="enter social security number">
+      <EnterSocialSecurityNumberStep /> Render when ?funnel-step="enter social security number"
+    </Funnel.Step>
+
+    <Funnel.Step name="done">
+      <DoneStep /> // Render when ?funnel-step="done"
+    </Funnel.Step>
+  </Funnel>
+)
+```
+
+
+toss 라이브러리에서는 useFunnel이라는 hook이 있습니다.
+useFunnel은 비즈니스로직과 완전히 밀접한 관련이 있는 컴포넌트로 보이네요.
+
+
+컴포넌트와 비즈니스 로직이 만약 분리되어있다면,
+누군가는 컴포넌트만 import를 해와서 해당 컴포넌트를 사용할 때마다 비즈니스 로직 hook이나 local상태로 또 만들어서 사용했을 것입니다.
+
+
+그렇게 사용하지 못하도록 강제로 비즈니스 로직과 컴포넌트를 하나의 export로 제공하여 코드가 파편화되지 않도록 관리할 수 있도록 해주었네요.
+
+
+### kakao 사례
+
+
+[https://fe-developers.kakaoent.com/2023/230330-frontend-solid/](https://fe-developers.kakaoent.com/2023/230330-frontend-solid/)
+카카오에서는 100% 공개되어있는 코드는 아니지만 카카오 기술 블로그 코드들을 보다보면 사용하는 경우를 옅볼 수 있었습니다.
+
+- kakao useFetcher 사용 패턴
+
+```typescript
+function Fetcher({query, children}){
+  const { isLoading, error, data } = query();
+  if(isLoading) {
+    return <Loading />
+  }
+  if(error){
+    return <Error />
+  }
+  return children;
+}
+
+function TicketInfoContainer() {
+  //useFetcher 구현채는 제공되지 않음
+  const [{waitfreePeriod, waitfreeChargedDate, rentalTicketCount, ownTicketCount}, TicketInfoFetcher] = useFetcher(useTicketInfoQuery);
+  const [{keywordInfo}, KeywordInfoFetcher] = useFetcher(useKeywordInfoQuery);
+  const [{commentCount}, CommentInfoFetcher] = useFetcher(useCommentInfoQuery);
+
+
+  return (
+    <TicketInfoFetcher>
+      <TicketInfo>
+        <TicketInfo.WaitfreeArea waitfreePeriod={waitfreePeriod} waitfreeChargedDate={waitfreeChargedDate} />
+        <TicketInfo.TicketArea rentalTicketCount={rentalTicketCount} ownTicketCount={ownTicketCount} />
+        <KeywordInfoFetcher />
+        <CommentInfoFetcher>
+          <TicketInfo.CommentArea commentCount={commentCount} keywordInfo={keywordInfo} />
+        </CommentInfoFetcher>
+      </TicketInfo>
+    </TicketInfoFetcher>
+  )
+}
+```
+
+
+카카오에서는 useFetcher 형태로 컴포넌트 리턴 패턴을 사용하고 있습니다.
+useFetcher의 구현채는 확인해볼 수 없었지만 Fetcher 함수를 봤을 때 대략적으로 hook에서 하는 일을 추측해보면,
+
+1. query를 받는다.
+2. query의 loading error를 관리해주고 컴포넌트를 return 한다.
+
+요런 일들을 하니까 아래 형태의 hook정도로 추측되네요.
+
+
+```typescript
+function useFetcher({query}){
+  const queryResponse = query();
+
+  const fetcherComponent =  React.useMemo(({children}:{children: ReactNode}) => {
+    if(queryResponse.isLoading) {
+      return <Loading />
+    }
+    if(queryResponse.isError){
+      return <Error />
+    }
+    return children;
+  }, [queryResponse.isLoading, queryResponse.isError])
+
+  return [{...queryResponse}, fetcherComponent ];
+}
+```
+
+
+해당 내용의 장점은 링크를 남겨놓은 카카오 블로그에서 너무 많은 얘기를 하고 있어서 직접 확인하시는걸 추천드립니다!
+
+
+### 실제로 겪은 사례
+
+
+아래는 실제 개발할 때 겪은 시나리오입니다.
+
+> 🥸 (기획자): 게시 버튼을 눌렀을 때, 게시할 수 있을 경우 A모달을 게시할 수 없을 경우에는 B모달을 또 어떠한 경우에는 C모달을 띄워주세요.
+- 일반적으로 작성할 경우
+
+```typescript
+const TestButton = React.memo(function TestButton() {
+  const [isOpenA, setIsOpenA] = React.useState(false)
+  const [isOpenB, setIsOpenB] = React.useState(false)
+  const [isOpenC, setIsOpenC] = React.useState(false)
+  const [isOpenD, setIsOpenD] = React.useState(false)
+
+  function handleModal(){
+    if(...){
+      setOpenA(true)
+      return
+    }
+    if(...){
+      setOpenB(true)
+      return
+    }
+    if(...){
+      setOpenC(true)
+      return
+    }
+  }
+  return <>
+  	<button onClick={handleModal}>모달열기</button>
+    <ModalA openA={openA} setOpenA={setOpenA}/>
+    <ModalB openA={openB} setOpenA={setOpenB}/>
+    <ModalC openA={openC} setOpenA={setOpenC}/>
+    <ModalD openA={openD} setOpenA={setOpenD}/>
+  </>;
+});
+```
+
+
+밖에서는 무슨 모달이든 한개를 노출하는 것이 목적인데, 조건이 많을 수록 불필요한 선언이 많아져서 복잡도가 높아 보입니다.
+
+- return component hook
+
+```typescript
+function useHandleModal() {
+  // 모달 state 선언 등
+
+  const handleModal = () => {
+   // 모달 state 핸들링
+  };
+
+  return {
+    Modal: (
+      <>
+        <ModalA openA={openA} setOpenA={setOpenA} />
+        <ModalB openA={openB} setOpenA={setOpenB} />
+        <ModalC openA={openC} setOpenA={setOpenC} />
+        <ModalD openA={openD} setOpenA={setOpenD} />
+      </>
+    ),
+    handleModal,
+  };
+}
+
+const TestButton = React.memo(function TestButton() {
+  const {Modal, handleModal} = useHandleModal()
+
+  return <>
+  	<button onClick={handleModal}>모달열기</button>
+    <Modal />
+  </>;
+});
+```
+
+
+다음과 같은 패턴을 사용하였더니, 비즈니스 로직은 전부 hook에 넣고 밖에서는 선언된 컴포넌트와 핸들링 하는 함수가 있다만 보고 선언적인 코드를 작성할 수 있게 되었습니다.
+
+
+## 단점
+
+
+많은 장점을 소개했지만 단점도 있습니다.
+
+1. UI와 비즈니스 로직간의 관심사 분리가 되지 않는다.
+2. 컴포넌트의 재사용성을 낮춘다.
+
+컴포넌트를 return하는 hook을 사용했을 경우 밀집도가 높은 코드를 작성할 수 있지만 반대로 UI 컴포넌트만 사용할 수 없게되어 재사용성을 낮추게 됩니다.
+게다가 비즈니스 로직과 섞여버린 컴포넌트는 해당 비즈니스 로직외에는 재사용할 수 없다고 생각해야됩니다.
+
+
+## 정리
+
+
+흔하게 많이 사용되는 패턴은 아니지만 유용해서 사용하고 있기에 공유하는 글을 작성해보았습니다.
+
+
+컴포넌트를 return하는 패턴을 무분별하게 사용할 경우, 비즈니스로직과 UI컴포넌트간의 분리가 되지 않아서 악취 덩어리의 코드가 될 것입니다.
+하지만 밀접한 연관성이 있는 로직간에는 아주 좋은 해결책이 될 수 있습니다.
+
+
+읽어주셔서 감사합니다.
+
+
+썸네일 이미지는 gpt 한테 요청해봤는데 오타를 자꾸만드네요 ^^...
+
+
+### 레퍼런스
+
+- [https://github.com/toss/slash/tree/main/packages/react/use-funnel](https://github.com/toss/slash/tree/main/packages/react/use-funnel)
+- [https://www.reddit.com/r/reactjs/comments/t7dg4e/custom_hook_returning_a_component_is_it_an/](https://www.reddit.com/r/reactjs/comments/t7dg4e/custom_hook_returning_a_component_is_it_an/)
+- [https://www.reddit.com/r/reactjs/comments/sumol5/react_design_patterns_return_component_from_hooks/](https://www.reddit.com/r/reactjs/comments/sumol5/react_design_patterns_return_component_from_hooks/)
+- [https://stackoverflow.com/questions/75871491/is-it-a-good-idea-to-return-component-from-custom-hook-in-react](https://stackoverflow.com/questions/75871491/is-it-a-good-idea-to-return-component-from-custom-hook-in-react)
+- [https://dev.to/droopytersen/new-react-hooks-pattern-return-a-component-31bh](https://dev.to/droopytersen/new-react-hooks-pattern-return-a-component-31bh)
+- [https://github.com/toss/slash/tree/main/packages/react/use-funnel](https://github.com/toss/slash/tree/main/packages/react/use-funnel)
+- [https://fe-developers.kakaoent.com/2023/230330-frontend-solid/](https://fe-developers.kakaoent.com/2023/230330-frontend-solid/)

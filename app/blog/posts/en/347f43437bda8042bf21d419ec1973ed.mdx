@@ -1,0 +1,135 @@
+---
+title: "Time Units"
+publishedAt: "2023-01-12"
+summary: ""
+language: "en"
+tags: []
+---
+
+During development, I often found the concepts of timezone and format confusing.
+
+So, I decided to write this to briefly organize them.
+
+This post isn't about explaining how to use `dayjs`, but rather how `dayjs` can be applied within the concepts of time format and timezone.
+
+# 1. Timezones: UTC vs GMT
+
+## 1.1 GMT
+
+GMT (Greenwich Mean Time) is the mean solar time measured at the Greenwich Observatory, used to set clocks.
+
+It is 0 based on noon at the Greenwich Observatory.
+
+It is not precise because it is determined based on the Earth's rotation.
+This is because the Earth's rotation is influenced by the movements of the Earth's core, oceans, and atmosphere.
+
+Therefore, to reconcile the discrepancy between UTC and GMT (which will be explained later), leap seconds are applied to UTC to resolve the error.
+
+## 1.2 UTC
+
+UTC (Coordinated Universal Time) uses time measurement based on atomic clocks.
+
+An atomic clock defines time by measuring the minute electronic transitions of cesium atoms.
+
+You can find the principles of atomic clocks on YouTube, etc.
+
+In any case, because of this, it is very accurate.
+
+Similar to GMT, it is a timezone bounded by the Prime Meridian, but time measurement is based on atomic clocks.
+
+GMT+1 and UTC+1 are, in other words, the same timezone.
+
+# 2. Time Formats
+
+## 2.1 ISO 8601
+
+It was published in 1988 by the International Organization for Standardization.
+
+It was developed to clearly define the representation of dates and times, preventing confusion in international contexts.
+
+The `YYYY.MM.DD` format, commonly encountered in development, falls under this standard.
+
+### Notation
+
+When connecting dates and times, the character `T` is used.
+
+<aside>
+🕙
+Y ⇒ Year
+
+M before T ⇒ Month
+
+D ⇒ Day
+
+H ⇒ Hour
+
+M after T ⇒ Minute
+
+S ⇒ Second
+
+P ⇒ When 'P' is prefixed, it indicates a duration.
+
+(`P3Y6M4DT12H30M5S` means "3 years, 6 months, 4 days, 12 hours, 30 minutes, 5 seconds") (`PT10M` means "10 minutes")
+
+</aside>
+
+### Timezones
+
+1.  UTC
+
+Appending `Z` indicates UTC time.
+
+`2024-01-18T11:55:48.192831Z`
+
+2.  To specify a local timezone instead of UTC, append `+HH:MM`.
+
+`2024-01-18T20:55:48.192831+09:00`
+
+## 2.2 Unix timestamp
+
+It represents the time elapsed since January 1, 1970, 00:00:00 UTC, in seconds.
+
+It is based solely on UTC time, which is not affected by timezones.
+
+## 2.3 HTTP Date
+
+[https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Date](https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Date)
+
+This is the date and time representation used in HTTP headers.
+
+`Sun, 06 Nov 1994 08:49:37 GMT`
+
+# 3. dayjs
+
+Now that we've covered all the timezones and format types, let's apply them to `dayjs`!
+
+```javascript
+dayjs().unix() // returns unix time 1705581000
+dayjs().toString() // returns HTTP Date time "Thu, 18 Jan 2024 12:29:55 GMT"
+dayjs().format() // returns time with UTC timezone "2024-01-18T21:31:17+09:00"
+dayjs().ISOString() // returns UTC ISO time
+```
+
+It seems these are the only formats I've dealt with during development.
+
+You can combine the above formats and apply them to your development.
+
+For example, it would be applied in a way like this:
+
+What if the server provides Unix time, but it needs to be displayed in ISO format?
+
+- Unix to ISO format
+
+```javascript
+dayjs(unix * 1000).format()
+```
+
+Unix time is in seconds.
+
+However, since JavaScript uses Unix time in milliseconds, we multiply by 1000 to convert it from seconds.
+
+# Conclusion
+
+I've organized information related to timezones.
+
+After organizing it once, the concepts seem to be much clearer.

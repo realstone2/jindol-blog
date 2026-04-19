@@ -1,0 +1,403 @@
+---
+title: "useContext"
+publishedAt: "2022-12-23"
+summary: ""
+language: "en"
+tags: []
+---
+
+
+## Context API?
+
+
+Based on the React official documentation, I've clearly summarized what it is!
+
+
+It's an API that allows data to be passed to child components without `Props Drilling`.
+
+
+It can be used as a means for state management.
+
+
+(It can be used *as a means*, but saying that Context API *is* a state management tool is incorrect.)
+
+
+## When to use it?
+
+
+```javascript
+function App() {
+
+  const theme = useMemo(()=>{
+    return (
+      {
+        backgroundColor: 'black' : 'tomato',
+        color: 'white'
+      }
+    )
+  }, [isDark]);
+
+  return (
+    <div className="App"><ToolBar theme={theme} /></div>
+  );
+}
+export function ToolBar({theme}){
+  return (<><ThemeButton theme={theme} /><ThemeButton theme={theme} /><ThemeButton theme={theme} /><ThemeButton theme={theme} /></>)
+}
+
+export function ThemeButton({theme}){
+	return(
+	<div style={{...theme}}>
+	  button</div>
+)}
+```
+
+
+It is used to prevent unnecessary props drilling, as shown in the code above.
+
+
+While passing 2 or 3 props might not make it difficult to understand the context,
+
+
+if it gets too long, both code readability and maintenance will become challenging, right?
+
+
+## How to use
+
+
+I've only covered how to use it in functional components, excluding class components!
+
+
+[https://github.com/facebook/react/blob/main/packages/react/src/ReactContext.js](https://github.com/facebook/react/blob/main/packages/react/src/ReactContext.js)
+
+
+### createContext()
+
+
+Creates a context object.
+
+
+```javascript
+export const ThemeContext = createContext();
+```
+
+
+The context object provides the following three things!
+
+- `Provider`
+- Consumer ⇒ `useContext`
+- displayName (React DevTools)
+
+### Provider
+
+
+A Provider allows child components to access the context.
+
+
+Child components that consume the context's value must always be wrapped within a Provider.
+
+
+```javascript
+<ThemeContext.Provider value="Hello World"><GrandParent /></ThemeContext.Provider>
+```
+
+
+### useContext
+
+
+This hook allows you to consume context values.
+
+
+It provides the same functionality as `Consumer`, and recently, you can often see code where `useContext` hook is used as a replacement.
+
+
+```javascript
+const hello = useContext(ThemeContext);
+```
+
+
+## Actual Usage
+
+
+Let's look at the actual usage code!
+
+- ThemeProvider.js
+
+```javascript
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+
+const ThemeContext = createContext();
+
+export function useThemeContext(){ // 사용하는곳에서 명시적으로 사용하기 위함
+  return useContext(ThemeContext)
+}
+
+export function ThemeProvider({children}){
+  const [isDark, setIsDark] = useState(false)
+
+  const theme = useMemo(()=>{
+    return (
+      {
+        backgroundColor: isDark ? 'black' : 'tomato',
+        color: 'white'
+      }
+    )
+  }, [isDark])
+
+  return (
+    <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+  )
+}
+```
+
+- App.js
+
+```javascript
+<ThemeProvider><ToolBar/></ThemeProvider>
+```
+
+- ToolBar
+
+```javascript
+export function ToolBar(){
+  return (<><ThemeButton /><ThemeButton /><ThemeButton /><ThemeButton /></>)
+}
+
+export function ThemeButton(){
+  const theme = useThemeContext()
+
+  return(
+    <div style={{...theme}}>
+      button</div>
+)}
+```
+
+
+You can see that unnecessary props have been removed from the initial example code.
+
+
+In ThemeProvider.js, it receives `children`, places data into `value`, and wraps them with a Provider.
+
+
+## When State Management is Needed
+
+
+What if you want to change the theme based on a button that implements something like `darkmode`?
+
+- ThemeProvider.js
+
+```javascript
+export function ThemeProvider({children}){
+  const [isDark, setIsDark] = useState(false)
+
+  const theme = useMemo(()=>{
+    return (
+      {
+        backgroundColor: isDark ? 'black' : 'tomato',
+        color: 'white'
+      }
+    )
+  }, [isDark])
+
+  const onPressButton = useCallback(()=>{
+    setIsDark(prev => !prev)
+  },[])
+
+  return (
+    <ThemeContext.Provider value={[theme, onPressButton]}>{children}</ThemeContext.Provider>
+  )
+}
+```
+
+- ToolBar
+
+```javascript
+export function ThemeButton(){
+  const [theme] = useThemeContext()
+
+  return(
+    <div style={{...theme}}>
+      button</div>
+)}
+
+export function ChangeTheme(){
+  const [, onClik] = useThemeContext()
+
+  return(
+    <div onClick={onClik}>
+      Change</div>
+  )
+}
+```
+
+
+This is as far as the React official documentation explains! However, there's a significant problem with this code.
+
+
+## Problem
+
+
+```javascript
+export function ThemeButton(){
+  const [theme] = useThemeContext()
+
+ console.log('ThemeButton is Render')
+
+  return(
+    <div style={{...theme}}>
+      button</div>
+)}
+
+export function ChangeTheme(){
+  const [, onClik] = useThemeContext()
+
+  console.log('ChangeThemeToggle is Render')
+
+  return(
+    <div onClick={onClik}>
+      Change</div>
+  )
+}
+```
+
+
+In the `ChangeTheme` component, a re-render occurs even though its state hasn't changed and no props have been passed in as changed.
+
+
+This happens because when the function is called, part of the Provider object changed, and `onClik` was also part of that context!
+
+
+Let's look at the caveats below!
+
+
+## Caveats
+
+1.  **State management functions and values should be separated.**
+
+If a value changes, components using other variables from that Context will also re-render.
+
+
+Code should be written with strict separation of concerns and state management function separation.
+
+
+As mentioned earlier, `useContext` is an API, not intended for state management!
+
+
+It simply passes values without prop drilling, and it triggers a re-render when the value changes.
+
+
+Therefore, it's crucial to consider this purpose and separate the context for functions and the context for changing values.
+
+
+```javascript
+export const ThemeValueContext = createContext();
+export const DarkModeActionContext = createContext();
+
+export function useThemeContext(){
+  return useContext(ThemeValueContext)
+}
+
+export function useDarkModeContext(){
+  return useContext(DarkModeActionContext)
+}
+
+export function ThemeProvider({children}){
+  const [isDark, setIsDark] = useState(false)
+
+  const theme = useMemo(()=>{
+    return (
+      {
+        backgroundColor: isDark ? 'black' : 'tomato',
+        color: 'white'
+      }
+    )
+  }, [isDark])
+
+  const onPressButton = useCallback(()=>{
+    setIsDark(prev => !prev)
+  },[])
+
+  return (
+    <ThemeValueContext.Provider value={'asdf'}><DarkModeActionContext.Provider value={onPressButton}>{children}</DarkModeActionContext.Provider></ThemeValueContext.Provider>
+  )
+}
+
+export function ThemeButton(){
+  const theme = useThemeContext()
+
+  console.log('ThemeButton is Render')
+
+  return(
+    <div style={{...theme}}>
+      button</div>
+)}
+
+export function ChangeTheme(){
+  const onClik = useDarkModeContext()
+
+  console.log('ChangeThemeToggle is Render')
+
+  return(
+    <div onClick={onClik}>
+      Change</div>
+  )
+}
+```
+
+2.  **defaultValue**
+
+Context checks for changes in `value` by reference (`Object.is`), not by the value itself.
+
+
+Therefore, if you pass a plain value to `defaultValue` and the provider component re-renders,
+
+
+even if the value is the same, a different reference will be perceived as a change in context, causing all child components consuming that context to re-render.
+
+- Problematic Code
+
+```javascript
+<MyContext.Provider value={{something: 'something'}}> //memo된 값으로 레퍼런스가 변경 안되도록 처리 해야함<Toolbar /></MyContext.Provider>
+```
+
+3.  **Component reusability becomes difficult.**
+
+Since functions can only operate within a Provider, there are limitations to component reusability.
+
+
+Therefore, it should only be used when absolutely necessary.
+
+
+One method suggested in the official documentation is **`component composition`**.
+
+
+```javascript
+function App() {
+  const theme = useMemo(()=>{
+    return (
+      {
+        backgroundColor: 'black' : 'tomato',
+        color: 'white'
+      }
+    )
+  }, [isDark]);
+
+const changeButton = useMemo(() => {
+		return(
+				<div onClik={()=> setIsDark(prev => !prev}>
+			  Change</div>
+		)
+},[])
+
+  return (
+    <div className="App"><ToolBar changeButton={changeButton}/></div>
+  );
+}
+
+export function ToolBar({ changeButton}){
+  return (<>{changeButton}</>)
+}
+```
+
+
+Up to this point, we've explored the usage based on the React official documentation!

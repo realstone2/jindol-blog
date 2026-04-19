@@ -1,0 +1,274 @@
+---
+title: "[Design Pattern] Return Component Hook Pattern"
+publishedAt: "2024-08-04"
+summary: ""
+language: "en"
+tags: []
+---
+
+
+![image.webp](https://velog.velcdn.com/images/yeojinseuk/post/454e40de-5662-4edd-aa96-6ea8ba70e152/image.webp)
+
+
+Hello. I'm Jindol, a frontend developer.
+Today, I'd like to share a hook pattern that returns components.
+
+
+## What kind of pattern is it?
+
+
+Typically, hooks are often used to encapsulate business logic and return state (e.g., `useForm`, `useQuery`).
+
+
+The pattern of returning a component is, as the name suggests, a hook that returns a component along with other values.
+
+
+```javascript
+const {Modal, handleModal} = useModal();
+```
+
+
+It can be used to hide business logic or to group components that are closely related to specific business logic.
+
+
+## Advantages
+
+1.  Encapsulates business logic, eliminating the need to expose unnecessary components.
+2.  Tightly couples business logic and components, preventing fragmentation.
+
+I will introduce this pattern through examples I've encountered and code used at Toss and Kakao.
+
+
+### Toss Example
+
+
+[https://github.com/toss/slash/tree/main/packages/react/use-funnel](https://github.com/toss/slash/tree/main/packages/react/use-funnel)
+First, let's introduce a pattern used at Toss.
+
+- toss useFunnel hook
+
+```typescript
+const [Funnel, setStep] = useFunnel(['enter name', 'enter social security number', 'done'] as const)
+
+return (
+  <Funnel>
+    <Funnel.Step name="enter name">
+      <EnterNameStep /> // Render when ?funnel-step="enter name"
+    </Funnel.Step>
+
+    <Funnel.Step name="enter social security number">
+      <EnterSocialSecurityNumberStep /> Render when ?funnel-step="enter social security number"
+    </Funnel.Step>
+
+    <Funnel.Step name="done">
+      <DoneStep /> // Render when ?funnel-step="done"
+    </Funnel.Step>
+  </Funnel>
+)
+```
+
+
+The Toss library includes a hook called `useFunnel`.
+`useFunnel` appears to be a component tightly coupled with business logic.
+
+
+If the component and business logic were separated,
+someone might import only the component and then recreate the business logic hook or local state every time they use that component.
+
+
+To prevent such usage, it forces the business logic and component to be provided as a single export, helping to manage the code without fragmentation.
+
+
+### Kakao Example
+
+
+[https://fe-developers.kakaoent.com/2023/230330-frontend-solid/](https://fe-developers.kakaoent.com/2023/230330-frontend-solid/)
+While not 100% publicly available, I've observed instances of this pattern being used in Kakao's tech blog code examples.
+
+- Kakao `useFetcher` Usage Pattern
+
+```typescript
+function Fetcher({query, children}){
+  const { isLoading, error, data } = query();
+  if(isLoading) {
+    return <Loading />
+  }
+  if(error){
+    return <Error />
+  }
+  return children;
+}
+
+function TicketInfoContainer() {
+  //useFetcher 구현채는 제공되지 않음
+  const [{waitfreePeriod, waitfreeChargedDate, rentalTicketCount, ownTicketCount}, TicketInfoFetcher] = useFetcher(useTicketInfoQuery);
+  const [{keywordInfo}, KeywordInfoFetcher] = useFetcher(useKeywordInfoQuery);
+  const [{commentCount}, CommentInfoFetcher] = useFetcher(useCommentInfoQuery);
+
+
+  return (
+    <TicketInfoFetcher>
+      <TicketInfo>
+        <TicketInfo.WaitfreeArea waitfreePeriod={waitfreePeriod} waitfreeChargedDate={waitfreeChargedDate} />
+        <TicketInfo.TicketArea rentalTicketCount={rentalTicketCount} ownTicketCount={ownTicketCount} />
+        <KeywordInfoFetcher />
+        <CommentInfoFetcher>
+          <TicketInfo.CommentArea commentCount={commentCount} keywordInfo={keywordInfo} />
+        </CommentInfoFetcher>
+      </TicketInfo>
+    </TicketInfoFetcher>
+  )
+}
+```
+
+
+Kakao uses the component return pattern in the form of `useFetcher`.
+Although the implementation of `useFetcher` isn't available, by looking at the `Fetcher` function, we can roughly infer what the hook does:
+
+
+1.  Receives a query.
+2.  Manages the loading and error states of the query and returns a component.
+
+
+Given these tasks, it's likely a hook structured somewhat like this:
+
+
+```typescript
+function useFetcher({query}){
+  const queryResponse = query();
+
+  const fetcherComponent =  React.useMemo(({children}:{children: ReactNode}) => {
+    if(queryResponse.isLoading) {
+      return <Loading />
+    }
+    if(queryResponse.isError){
+      return <Error />
+    }
+    return children;
+  }, [queryResponse.isLoading, queryResponse.isError])
+
+  return [{...queryResponse}, fetcherComponent ];
+}
+```
+
+
+The advantages of this approach are extensively discussed in the linked Kakao blog post, so I recommend checking it out directly!
+
+
+### Real-world Scenario
+
+
+Below is a scenario I encountered during actual development.
+
+
+> 🥸 (Product Manager): When the post button is pressed, display Modal A if it can be posted, Modal B if it cannot, and Modal C in certain other cases.
+- Typically written as
+
+```typescript
+const TestButton = React.memo(function TestButton() {
+  const [isOpenA, setIsOpenA] = React.useState(false)
+  const [isOpenB, setIsOpenB] = React.useState(false)
+  const [isOpenC, setIsOpenC] = React.useState(false)
+  const [isOpenD, setIsOpenD] = React.useState(false)
+
+  function handleModal(){
+    if(...){
+      setOpenA(true)
+      return
+    }
+    if(...){
+      setOpenB(true)
+      return
+    }
+    if(...){
+      setOpenC(true)
+      return
+    }
+  }
+  return <>
+  	<button onClick={handleModal}>Open Modal</button>
+    <ModalA openA={openA} setOpenA={setOpenA}/>
+    <ModalB openA={openB} setOpenA={setOpenB}/>
+    <ModalC openA={openC} setOpenA={setOpenC}/>
+    <ModalD openA={openD} setOpenA={setOpenD}/>
+  </>;
+});
+```
+
+
+The goal is to display one modal, regardless of which one, but as the number of conditions increases, so does the number of unnecessary declarations, leading to higher complexity.
+
+- return component hook
+
+```typescript
+function useHandleModal() {
+  // Modal state declarations, etc.
+
+  const handleModal = () => {
+   // Modal state handling
+  };
+
+  return {
+    Modal: (
+      <>
+        <ModalA openA={openA} setOpenA={setOpenA} />
+        <ModalB openA={openB} setOpenA={setOpenB} />
+        <ModalC openA={openC} setOpenA={setOpenC} />
+        <ModalD openA={openD} setOpenA={setOpenD} />
+      </>
+    ),
+    handleModal,
+  };
+}
+
+const TestButton = React.memo(function TestButton() {
+  const {Modal, handleModal} = useHandleModal()
+
+  return <>
+  	<button onClick={handleModal}>Open Modal</button>
+    <Modal />
+  </>;
+});
+```
+
+
+By using this pattern, all business logic is placed within the hook, allowing for declarative code where the outer component only needs to see the declared component and the handling function.
+
+
+## Disadvantages
+
+
+While I've introduced many advantages, there are also disadvantages.
+
+1.  Lack of separation of concerns between UI and business logic.
+2.  Reduces component reusability.
+
+While using a hook that returns a component can lead to highly cohesive code, it conversely reduces reusability by making it impossible to use the UI component alone.
+Furthermore, a component intertwined with business logic should be considered non-reusable outside of that specific business logic.
+
+
+## Summary
+
+
+This isn't a widely used pattern, but I find it useful, so I decided to write this post to share it.
+
+
+If the pattern of returning a component is used indiscriminately, it can lead to a lack of separation between business logic and UI components, resulting in 'smelly' code.
+However, for closely related logic, it can be an excellent solution.
+
+
+Thank you for reading.
+
+
+I asked GPT for the thumbnail image, but it keeps making typos ^^...
+
+
+### References
+
+- [https://github.com/toss/slash/tree/main/packages/react/use-funnel](https://github.com/toss/slash/tree/main/packages/react/use-funnel)
+- [https://www.reddit.com/r/reactjs/comments/t7dg4e/custom_hook_returning_a_component_is_it_an/](https://www.reddit.com/r/reactjs/comments/t7dg4e/custom_hook_returning_a_component_is_it_an/)
+- [https://www.reddit.com/r/reactjs/comments/sumol5/react_design_patterns_return_component_from_hooks/](https://www.reddit.com/r/reactjs/comments/sumol5/react_design_patterns_return_component_from_hooks/)
+- [https://stackoverflow.com/questions/75871491/is-it-a-good-idea-to-return-component-from-custom-hook-in-react](https://stackoverflow.com/questions/75871491/is-it-a-good-idea-to-return-component-from-custom-hook-in-react)
+- [https://dev.to/droopytersen/new-react-hooks-pattern-return-a-component-31bh](https://dev.to/droopytersen/new-react-hooks-pattern-return-a-component-31bh)
+- [https://github.com/toss/slash/tree/main/packages/react/use-funnel](https://github.com/toss/slash/tree/main/packages/react/use-funnel)
+- [https://fe-developers.kakaoent.com/2023/230330-frontend-solid/](https://fe-developers.kakaoent.com/2023/230330-frontend-solid/)
