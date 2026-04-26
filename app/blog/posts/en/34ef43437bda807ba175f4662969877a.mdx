@@ -1,0 +1,118 @@
+---
+title: "Implementing Auth in react-router-v7 (remix)"
+publishedAt: "2026-04-26"
+summary: ""
+language: "en"
+tags: []
+---
+
+## When I First Joined the Company
+
+When I first joined the company, the FE authentication flow was already established. All processing was done on the client side, with the RT stored as an HttpOnly cookie in the auth service domain, and the AT kept in Zustand memory.
+
+The problem was that bugs in that area were incessant. Issues included seeing different accounts in different tabs, or refreshing an authenticated page would briefly show a blank screen before redirecting to the login page. I didn't have time to investigate thoroughly, so I applied temporary fixes as they arose.
+
+In my previous company, I worked with Next.js, but remix (react-router-v7) was new to me, making it difficult to distinguish between intended behavior and bugs.
+
+## Existing Architecture
+
+The overall picture was simple. Upon login, the auth service would send the RT as an HttpOnly cookie in its own domain, and include the AT in the response body. The client would store the received AT in Zustand memory and include it in the Bearer header with every API call. When the AT expired, a new one was fetched via `POST /refresh`.
+
+>
+> ![mermaid-diagram_%281%29.svg](https://duzswvwtwcafa.cloudfront.net/posts/34ef43437bda807ba175f4662969877a/5c9fc3c5.webp)
+>
+
+Since the AT was only in browser memory, the Node server couldn't see it. The RT was tied to the auth service domain, so the cookie wouldn't follow to the SSR server domain. This meant the SSR server had no way of knowing who the user was. Both authentication guards and page-level data loading only began after the client was mounted.
+
+## What Bugs Occurred
+
+The following symptoms repeatedly occurred with this architecture.
+
+**1. APIs were sometimes called before a token was available.** Token checks within `clientLoader` ran asynchronously, and `HydrateFallback` was not defined. Although some parts were structured to flow synchronously with `await`, API calls continued to leak through at brief moments when no token was present somewhere in the component tree.
+
+**2. Different users could be seen in two tabs.** Since the AT was only in memory, opening a new tab meant it was empty. It took time to fetch a new AT by calling `/refresh` with the RT cookie. What if, during this time, another tab logged in with a different account? This created a state where one browser, two tabs, and two users were simultaneously active. This wasn't an occasional occurrence; it happened almost every time if a tab was already open.
+
+**3. HTML was rendered twice on authentication guard redirects.** Even if an unauthenticated user accessed `/my-account`, the SSR server, unaware of the authentication state, would first render and send down the HTML. Only after the client received and mounted it, and `clientLoader` triggered a redirect, would it navigate to `/login`. This effectively meant HTML was rendered twice for a single request. I thought this was normal behavior, but in fact, there was no need to render it twice.
+
+>
+> ![mermaid-diagram_%282%29.svg](https://duzswvwtwcafa.cloudfront.net/posts/34ef43437bda807ba175f4662969877a/fef45015.webp)
+>
+
+**4. The user's identity was unknown at SSR time.** This became a blocker when requirements needing user state arose before the page response was sent. For example, signals like GPC (Global Privacy Control) need to be handled before the HTML response is sent, but there was no way to know the user's consent status at that point. The inability of the SSR server to access authentication state was not just an inconvenience; it meant some requirements simply couldn't be met.
+
+## Where Did It Go Wrong
+
+Initially, I treated these as separate bugs: tab synchronization issues, redirect flicker issues, and requirements like GPC were simply deferred with "we can't do that right now."
+
+It was only when we reviewed it together in a study session that it became clear. All the symptoms above stemmed from the same statement: **"The AT is only in browser memory, and the RT is tied to the auth service domain cookie."** The inability of the SSR server to access the authentication state — this single factor was simultaneously causing all four issues. This naturally led to the next problem: **Move AT/RT to a location accessible by the SSR server.**
+
+## How to Fix It
+
+Once the direction was set, I had to figure out how to solve it. This brought back memories of working with Next.js in the past.
+
+In Next.js, tokens were managed by NextAuth in encrypted cookies. SSR could directly access the authentication state via cookies, and by using API Routes as a BFF Proxy, clients could safely handle the authentication flow without directly interacting with external authentication services. How could I achieve the same setup in remix (react-router-v7)?
+
+Searching through the documentation together, two tools stood out: **`createCookieSessionStorage`** handles encrypted session cookies — serving the same purpose as NextAuth's cookie sessions. **Resource Route** — a route that exports only `loader`/`action` without a component — plays the same role as Next.js's API Route. With these two, I envisioned creating both a BFF Proxy and session cookies.
+
+## New Architecture
+
+> Place a BFF Proxy between the auth service and the browser, and manage AT/RT in encrypted cookies within the SSR server's domain.
+
+This is a one-line summary of the direction we decided on earlier.
+
+>
+> ![mermaid-diagram_%283%29.svg](https://duzswvwtwcafa.cloudfront.net/posts/34ef43437bda807ba175f4662969877a/d52dd704.webp)
+>
+
+On the browser side, a new encrypted HttpOnly cookie named `__session` is created. Its domain is the same as the SSR server. It contains both the AT and RT, and automatically attaches to all requests going to this domain, whether they are page requests or API requests. The SSR server can decrypt this cookie to determine the authentication state. The SSR server is finally no longer isolated.
+
+The AT still remains in Zustand memory because the client needs a readily usable form. However, it is now closer to a cache than the source of truth. The true state resides within the cookie, and memory is merely a reflection of it.
+
+## BFF Proxy
+
+At the heart of the new architecture is the BFF Proxy. A route is created within the SSR server at the `/api/auth/*` path, which receives requests that the client *thought* it was sending to the auth service, and then forwards them to the auth service.
+
+>
+> ![mermaid-diagram_%284%29.svg](https://duzswvwtwcafa.cloudfront.net/posts/34ef43437bda807ba175f4662969877a/4fa0dc34.webp)
+>
+
+The proxy performs the following tasks: It reads `__session` from the incoming request, extracts the RT contained within, and transforms it into the format expected by the auth service (`Cookie: rt=xxx`). When the auth service responds with new RT/AT, the proxy re-encapsulates them into `__session` and sends them down with `Set-Cookie`. The auth service's domain cookie is stripped from the response. From the client's perspective, the response format from the endpoint it called appears unchanged.
+
+Thanks to this, client code barely needed to be touched. By simply changing the base URL of auth calls from `https://auth...` to `/api/auth/...`, the response format, call timing, and error handling all remained the same. It was decoupled with a single line in the env file.
+
+## New Authentication Flow
+
+>
+> ![mermaid-diagram_%285%29.svg](https://duzswvwtwcafa.cloudfront.net/posts/34ef43437bda807ba175f4662969877a/e33727a4.webp)
+>
+
+When a page request comes in, the SSR server's middleware first decrypts `__session` to check the authentication state. If unauthenticated, it immediately sends a 302 redirect. If authenticated, it renders and sends down the page as is. In either case, HTML is rendered only once. No redirects occur after the client is mounted.
+
+Token renewal is encapsulated within the SSR server. The client requests session synchronization via a separate endpoint, and the SSR server, if necessary, sends a `/refresh` request to the auth service via the BFF Proxy. When new AT/RT are received, `__session` is updated, and the AT in memory is also synchronized.
+
+## How the Four Symptoms Were Resolved
+
+Symptoms 1 (API calls during token absence) and 3 (HTML rendered twice) naturally disappeared as the SSR middleware took responsibility for authentication. By the time content reaches the client, the token is already determined, and redirects are handled by the middleware. For symptom 2 (different users across tabs), the source of truth shifted from memory to cookies, allowing tabs within the same domain to see the same state. For symptom 4 (lack of authentication state at SSR time), the middleware decrypts `__session`, providing authentication state at that point, thus creating a place for requirements like GPC that need to be handled at the response header stage.
+
+## Operational Aspects
+
+There were several operational aspects that needed to be addressed when migrating to this architecture.
+
+| Item | Content |
+|---|---|
+| **SESSION_SECRET Management** | Cookie encryption key. Injected at runtime from Secrets Manager. A fallback value is automatically applied during local development. |
+| **SSR Server Load** | All auth requests pass through the proxy, adding extra load to the SSR server. However, the frequency of auth requests themselves is low (login / logout / refresh). |
+| **Cookie Size** | `__session` only stores AT+RT (does not include user information). Within the 4KB limit. |
+| **Session Validity Period** | Cookie `maxAge` is 360 days. The actual session lifetime is determined by the auth service's RT TTL (typically 3 hours / Keep signed in 360 days). |
+
+## Conclusion
+
+When I joined the membership squad, I was initially very concerned because it was my first time using react-router-v7 (remix). However, by focusing on how each framework implements the same underlying concepts, it became easier to adapt.
+
+In the age of AI, it feels like these fundamental concepts could easily be overlooked, but I'm realizing their importance once again.
+
+However, translating the vision from code to a production environment is a separate matter. This improvement has not yet been deployed to QA.
+
+Due to imminent deadlines, there was no time for QA, and related issues were also postponed.
+
+I feel like I've explained the content of this post — why it needs to be done, and what improvements it brings — to countless people until I was hoarse. In an environment without a dedicated chapter lead to consolidate technical direction, I've once again realized through this experience that communication is as crucial as code when trying to implement bottom-up improvements.
