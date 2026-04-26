@@ -48,7 +48,7 @@ if (!NOTION_API_KEY || !NOTION_DATABASE_ID) {
 
 if (!GEMINI_API_KEY) {
   console.warn(
-    "⚠️  GEMINI_API_KEY가 설정되지 않아 자동 번역이 비활성화됩니다."
+    "⚠️  GEMINI_API_KEY가 설정되지 않아 자동 번역이 비활성화됩니다.",
   );
   console.warn("   한국어 버전만 생성됩니다.");
   console.warn("");
@@ -170,7 +170,7 @@ async function fetchPublishedPages(): Promise<NotionPage[]> {
  */
 async function savePageAsMDX(
   page: NotionPage,
-  postsDir: string
+  postsDir: string,
 ): Promise<void> {
   try {
     // 메타데이터 추출
@@ -181,7 +181,7 @@ async function savePageAsMDX(
     const markdown = await convertPageToMarkdown(
       notion,
       page.id,
-      metadata.slug
+      metadata.slug,
     );
 
     // 언어별 디렉토리 생성
@@ -267,7 +267,7 @@ async function syncNotion() {
 
       if (!hasDateField) {
         console.log(
-          `  ⏭️  건너뜀: ${metadata.title} (${slug}) - 날짜 데이터 없음`
+          `  ⏭️  건너뜀: ${metadata.title} (${slug}) - 날짜 데이터 없음`,
         );
         skippedCount++;
         continue;
