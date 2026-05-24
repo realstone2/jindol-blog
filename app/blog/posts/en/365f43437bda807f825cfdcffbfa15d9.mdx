@@ -1,0 +1,243 @@
+---
+title: "Tasks AI Can and Cannot Be Delegated (Building an E2E Automation Flow)"
+publishedAt: "2026-05-24"
+summary: ""
+language: "en"
+tags: []
+---
+
+Recently, I received a sub-task at work to explore delegating test code generation to AI.
+
+If you ask AI to "write test code!", it sometimes generates plausible test code, but other times it produces nonsensical code.
+
+Therefore, our team realized that we needed safeguards to consistently delegate test code generation to AI. In this process, I've documented why we chose E2E tests over unit or integration tests, and the considerations we had during its adoption.
+
+> To put it a bit grandiosly, perhaps it's the process of building an "AI-driven E2E test generation harness"?
+
+Ultimately, this post chronicles how we identified the boundaries between tasks that can be delegated to AI and those that must be decided by humans.
+
+## Why E2E Testing?
+
+We have already been using AI to write test code in various ways. Unit tests and integration tests are largely handled by AI delegation. Despite this, a significant number of bugs are still caught during QA team's TC (Test Case) review. Even if the lower test layers are green, issues continue to appear on the user-facing screen.
+
+While contemplating how to bridge this gap, a simple idea emerged: since we already have the "answer sheet" in the form of QA's TCs, if we translate them directly into E2E code, wouldn't we at least stop seeing bug reports related to those specific TCs?
+
+The reason E2E testing has had a small proportion until now is clear: it's the most expensive testing area to write. The human time invested per line of code—from scenario design, selector management, mock strategies, to flaky debugging—is greater than any other type of test.
+
+However, given that an "answer sheet" already exists and there's clear natural language input in the form of user scenarios, we determined that E2E testing offered the best cost-benefit ratio when delegated to AI in our team's context.
+
+---
+
+## What Defines Success?
+
+I believe the most crucial aspect when delegating a task to AI is clear data regarding the output.
+
+Therefore, I first considered what success criteria would allow us to confidently say, "Stable tests are running using AI-driven E2E testing!"
+
+### 1. Quantifying Success through Coverage Measurement
+
+My initial thought was to measure coverage based on code execution, similar to how coverage is measured with `vitest`.
+
+For the coverage measurement itself, I largely followed the approach described in the [Yeogi Eottae Tech Blog](https://medium.com/gccompany/playwright%EB%A1%9C-%ED%95%98%EB%8A%94-component-test%EC%99%80-e2e-test-coverage-424c1e3a5b2f).
+
+| Stage           | Tool                                                 | Timing                                              |
+| --------------- | -------------------------------------------------- | --------------------------------------------------- |
+| Instrumentation | Vite + `istanbul-lib-instrument` plugin            | When the dev server serves the source               |
+| Collection      | Playwright `afterEach` fixture                     | At the end of each test `window.__coverage__` → `.nyc_output/*.json` |
+| Merging         | `merge-e2e-coverage.mjs` (`istanbul-lib-coverage`) | Once after all tests complete                       |
+| Reporting       | `istanbul-reports` (html, text-summary)            | Same as above                                       |
+
+It seemed plausible and useful in that it allowed for clear quantification.
+
+However, when actually applied, the line coverage metric for the executed code was abnormally high.
+
+Even though E2E code was written for only a single page, code from various mounted areas was also executed and thus included in the coverage metric.
+
+This method yielded metrics that made it difficult to confidently state that our app was safe simply because we had E2E test code.
+
+### 2. Measuring Coverage via Test Cases (TCs)
+
+So, what success criteria could we adopt? After much deliberation, I returned to the beginning and realized that we already possessed high-quality, human-created data in the form of TCs. The clear success criteria were already present in human workflows.
+
+A TC itself acts as an "answer sheet" stating, "this action should occur in this way." Since QA directly writes and updates them, reliability is ensured by the human system, and the content itself is natural language, which can be directly fed as input to an LLM. In essence, the answer sheet, the examinee, and the scoring criteria were already in place as a complete set.
+
+Therefore, we changed the scoring unit from "lines of code" to "one row of TC." There's no room for inflation like with line coverage. A passing TC row means that one scenario has been accurately verified, matching 1:1 with the human-created answer sheet.
+
+However, not all TCs could be automated. Scenarios exist that FE code, no matter how well-written, cannot reach, such as in-store POS terminals, actual payments, or batch schedulers. Rather than simply removing these rows from the denominator, we included "Automated Rows / Automatable but Not Yet Automated Rows / Manual Rows / Spec-out Rows" together in a single table, establishing multiple criteria.
+
+Below are the results when the measurement script was executed.
+
+![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/5fde2128-7a9c-45c3-a2e1-ac4d569993b1/03dc1007-d34d-4bba-b8fc-ee482c81a0a2/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB4664UL5OL5M%2F20260524%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260524T140406Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJHMEUCIAxKzKkyBOOhDPhA1TmVIHED4GOPgHiEopEQ9%2FZqSY9TAiEAwVZ%2FjJmnOYBVMzU8a6ZzFKUy1CTtTWKhv2kV33u1QZAq%2FwMIThAAGgw2Mzc0MjMxODM4MDUiDEgrc2UehYlSJiLcGyrcA0UNbWB9Cqge%2FKk66PUSDPwm0IWMqvho0vOkI4cRg49%2FMW5b2PE991zPMlOtcB8fLn%2F3fWaH4uNOHemT%2B407gXMRaueNHi7d4KbNd9MYHzZi1IkHD5B2zEoRVkcP8db24IjqNDGS0SkDd3uim8qKu0Z3UZdbk%2BPWIedSvBL8Yc%2FfFkcTBGliVBbsQV0VyST9PIoMSLjpc7%2Bu19qmoDetySEbq4CcancMQbc8X%2FfDFNZCxFihbLM9%2FNvhvhYhlwvJmrS%2B3cRxYpgdc%2BLVdEInlKAHMCSlqWcYsoCnHqACnKEXr%2Fa57gQmHzm36sQjC%2FqpR9O2Dr1JarJ1FwyAqP9CIfEp4Yi7U6a1ic6lBsROSohSIUpTvGzzG8iNGcj%2FpqrLyP6GRGTLn3DYd7wtFTDuFinAGH9FgQ%2BERpBddIjwAZv4ov6r0COLgab5Lsp60cZkUVmA3CofEdernnCiS28cnZEJ%2B9CVM7eDmTJMj%2Fn%2BeB5SmM8KWd45f%2F7x7KMPipfJdgAj3WICmPrr53axVi5LzJJ%2BwiJ3uUI2MnEp2cXXdn69YsxtHXp53NGu1Ddx22Bn5wX%2FAlj8OOynIOPa2A5%2BwynFd%2Fp14wu%2Bd7nUWXv29qjKY5YonEOtakWaBDONMOb2y9AGOqUB4MFt8rPm5OF%2FyZlrhbasRc3QzUHzdFqFOmZ%2Bb5NgPhBhk3k0fBQfXmMsEAIn4nHJXhcb7%2Frg5uqTLLMlXNyh8OEhL8M7TNA2PEEpnvwjnyYTmfaH4E9cgrQrMij%2Bkw0rp7tmSJ3jb9GE3WonDdkkmHq1kWrG9Jh0Sgbf3w40DcGfKF4qco7fKPT1EY9vSE3zVOTbJvaAudFKSgtVimRceIBMw7qO&X-Amz-Signature=c7e68c49b075a6be3b7fe1fbf1c8130d2944f7fdae3862aeb3ea0f614c95a27f&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject)
+
+## Why a Harness is Necessary
+
+Now, clear success criteria exist, along with TCs where all scenarios are clearly written in natural language, and completed code.
+
+One might think, "Just use `playwright` to write tests for all scenarios, and voilà!", but that's not the case.
+From test cases to `playwright` E2E test code, many aspects still require human decision-making.
+
+### 1. Is it Testable on the Frontend?
+
+TCs themselves do not distinguish between backend and frontend.
+
+There were TCs that could not be tested with FE code, such as those with external dependencies or those updated according to scheduling.
+
+While it could be advanced by collaborating with the backend team to add relevant test APIs, our primary goal was to first test whether there were any issues with the frontend logic itself.
+
+While such classification could be done by LLM judgment, the final confirmation must be made by a human.
+
+### 2. Does the TC Reflect the Latest Specification?
+
+TCs were often written during the planning phase and sometimes did not reflect the latest specifications.
+
+There were cases where wording had changed or features had been spec'd out.
+
+When running the `spec`s, failures typically occurred in the following three cases, requiring human intervention:
+
+-   **`spec-out`**: When the feature itself has been removed, and the UI pointed to by the TC no longer exists → Mark TC as spec-out.
+-   **`tc-fe-mismatch`**: When the expected value of the TC differs from the actual behavior of the FE → Modify TC.
+-   **`ui-render-diff`**: Minor differences, such as text wrapping in a different location → Only supplement the `spec`'s selector.
+
+### 3. Is the Written E2E Code Testing Correctly?
+
+In practice, E2E code itself might appear fine during a code review, but there are cases where it fails to test properly.
+
+For example, if there's a test that a specific UI is not displayed upon entering a page, but the UI itself is broken and no UI is displayed correctly, it wouldn't be considered a valid test.
+
+To address such cases, we implemented a system to capture screenshots for each TC, making it easy for humans to review the relevant parts.
+
+By calling a capture function at the end of each `spec` step, the screen at that moment is saved as a PNG. After regression, a report with PNGs embedded in a table, categorized by TC No., is automatically generated.
+
+-   Example Image
+
+![image.png](https://duzswvwtwcafa.cloudfront.net/posts/365f43437bda807f825cfdcffbfa15d9/bcdc42c9.webp)
+
+Humans only need to review the captures of PASSed TCs to verify if the intended screen was indeed displayed.
+
+## Flow
+
+With the answer sheet (TCs) and clear scoring criteria in place, all that remained was to set up the automation pipeline. We broke it down into granular stages, allowing human intervention between each step.
+
+The overall flow was structured into four stages:
+
+1.  **Divide hundreds of rows of original TCs by feature** — A single raw CSV is split into N feature CSVs.
+2.  **Classify whether each row is a verifiable scenario on the FE** — Rows that the FE cannot reach, such as in-store POS, actual payments, or batch schedulers, are excluded from the denominator or marked separately.
+3.  **Write `spec.ts` only for verifiable rows + actual regression + PR creation** — N items run concurrently in independent worktrees per feature.
+4.  **Automatically classify failed rows and present decision options to humans** — Determine whether the TC is based on an old specification, the FE is incorrectly implemented, or only the `spec` selector needs to be supplemented.
+
+The outputs between each stage (split results, feasibility classification, PRs, failure classification reports) all operate as gates, where a human reviews them once before proceeding to the next stage.
+
+Among these, the feature splitting in step 1 ultimately yielded the greatest effect, for three reasons:
+
+-   **PR size is reduced** — Since only one `spec.ts` per feature plus necessary mock/fixture changes are included, reviewers can read everything at once and decide on merging. This prevents large PRs from accumulating and stalling reviews.
+-   **LLM session context remains small** — By reading only one feature and writing only one `spec`, the scope of work is consistently kept small. If a massive sheet is thrown in entirely, the LLM is prone to getting lost midway.
+-   **Feature-unit parallelization becomes possible** — With no inter-feature dependencies, N `spec.ts` generations are run concurrently with N workers. The time until regression completion is reduced by a factor of N.
+
+Below are the results when a single TC file from the My Account domain was run through the flow described above.
+
+| Spec                  | PASS    | FAIL  | SKIP  |
+| --------------------- | ------- | ----- | ----- |
+| addresses-mobile      | 22      | 0     | 0     |
+| beauty-profile-mobile | 32      | 0     | 0     |
+| main-page-mobile      | 12      | 0     | 0     |
+| menu-tree-mobile      | 10      | 0     | 0     |
+| reward-points-mobile  | 13      | 0     | 1     |
+| wishlist-mobile       | 23      | 0     | 1     |
+| membership-mobile     | 41      | 0     | 0     |
+| **Total**             | **153** | **0** | **2** |
+
+All 7 features run in parallel, and humans only need to review PRs on a per-feature basis.
+
+## Harness Structure
+
+By breaking down the four stages above into units of responsibility, three axes naturally emerged:
+
+-   **7 stage-specific skills** — 1 for routing + 4 for each stage + single `spec` writer + learning skill.
+-   **Writer ↔ Critic agent pair** — Operates as a pair for each feature within `orchestrate`.
+-   **Learning between rounds** — Rules are accumulated each iteration via `/use:ref-learn`.
+
+### 7 Skills
+
+| Skill                   | Responsibility                                              | Input                               | Output                               |
+| ----------------------- | ----------------------------------------------------------- | ----------------------------------- | ------------------------------------ |
+| `/qa-e2e`               | Routing. Decides which stage to proceed to based on input/intent | Natural language or CSV path        | Calls next skill                     |
+| `/qa-e2e-refine`        | Splits external CSV into features                           | raw CSV                             | n refined CSVs + README              |
+| `/qa-e2e-feasibility`   | Categorizes each row as a skill writable on FE              | Refined CSV                         | Updates Category column + report md  |
+| `/qa-e2e-orchestrate`   | N worktrees + `spec.ts` generation + PR                     | Refined CSV                         | `spec.ts` + PR + capture             |
+| `/qa-e2e-write`         | Writes single `spec` (called internally by `orchestrate`)   | 1 feature CSV                       | 1 `spec.ts`                          |
+| `/qa-e2e-resolve`       | Failure analysis of current context (cwd) — 8 categories + option matrix (analysis only) | Most recent `playwright results.json` | Markdown report stdout (decision/fix by caller) |
+| `/use:ref-learn`        | Extracts new rules from session dialogue → permanently reflects them in ref document. LLM in next session automatically follows | Session dialogue + user selection   | `.claude/ref/` md file update        |
+
+The core is the harness skill `/qa-e2e`, which, upon being called, reports the input status and automatically routes to the next stage. If a raw CSV is provided, it starts from `refine`; if a refined CSV, from `feasibility`; and if FAILs remain, it automatically routes from `resolve`.
+
+### Agent Pair — Writer ↔ Critic
+
+Among these, the automatic PR generation and failure classification of `/qa-e2e-orchestrate` are not merely simple scripts but the result of an agent pair's operation. In Phase O3 of `orchestrate`, 2N workers are simultaneously spawned in a single team. For each feature, two workers (writer + critic) are paired and operate as follows:
+
+```javascript
+qa-e2e-orchestrate-batch (단일 team)
+ ├ A_qa-e2e-spec-writer ↔ A_qa-e2e-critic    (피쳐 1 = worktree A)
+ ├ B_qa-e2e-spec-writer ↔ B_qa-e2e-critic    (피쳐 2 = worktree B)
+ ├ C_qa-e2e-spec-writer ↔ C_qa-e2e-critic    (피쳐 3 = worktree C)
+ └ …
+```
+
+-   `qa-e2e-spec-writer` (A) — Receives 1 feature CSV and writes 1 `spec.ts` (internally calls `/qa-e2e-write` skill, W1~W5). Upon receiving a FAIL verdict from the critic, it diagnoses/fixes itself — receives an analysis report via `Skill(qa-e2e-resolve)`, escalates to `team-lead`, and performs option-specific fixes based on the decision. This is a "writer takes full responsibility for their work" pattern.
+-   `qa-e2e-critic` (C) — Receives the writer's `spec.ts` and performs only verification: 5-category static review + actual `playwright` execution in its own worktree (automatic `PORT` env injection → automatic dev server startup). Responds only with a verdict (PASS/FAIL + `playwright_result` + `results.json` path). No `resolve` call / escalation / fix instructions — the writer handles these. Adheres to the role of an "external reviewer."
+
+This pair runs for a maximum of 2 cycles (C raises an issue → A modifies → C re-reviews). If an agreement isn't reached within 2 cycles, the main process retrieves the results and requests a human decision.
+
+Additionally, instead of being a one-off setup, a separate skill called `/use:ref-learn` runs concurrently, permanently accumulating newly acquired rules into a `ref` document with each iteration.
+
+The flow is simple. If any decisions are made during code reviews or extensive back-and-forth with AI, `/use:ref-learn` extracts only those rules from the session dialogue, presents them to the user via multi-select, and only the user-selected rules are permanently reflected in the convention document under `.claude/ref/`. The LLM in the next session automatically references this document, preventing the same mistakes from recurring.
+
+For example, if it's decided in a session not to use `route.continue()`, `/use:ref-learn` will embed this as a CRITICAL rule in `e2e-from-tc.md`, preventing the same issue from recurring in subsequent feature `spec`s.
+
+## Division of Roles Between Humans and AI
+
+While operating the automation pipeline, our primary focus was on the boundary of "how much can be delegated to AI, and from what point must humans make decisions?"
+
+### Parts Delegated to AI
+
+-   Natural language scenarios (TC) → `spec.ts` generation — writer agent
+-   Verification of generated `spec` + actual `playwright` execution — critic agent
+-   Feature-based splitting / feasibility classification / regression / failure classification / automatic capture report generation
+-   Suggesting new rule extraction from session dialogue — `ref-learn`
+
+### Parts That Must Be Decided by Humans
+
+During the operation of the automation described above, there are five points at each stage where human intervention is required:
+
+1.  **Review of `/qa-e2e-refine` split results** — The outcome of splitting raw CSVs by feature. Verify if multi-category rows were included in only one feature, and if there are any missing rows.
+2.  **Confirmation of `/qa-e2e-feasibility` classification (E2 Gate)** — If ambiguous rows were filled by LLM judgment, check the "Re-verification Needed" section of the report.
+3.  **PR review for `/qa-e2e-orchestrate`** — Automatically generated PRs per feature. Check if `spec.ts` follows conventions, if mocks are in the same format as actual BE responses, and if `captureStep` is embedded in each step.
+4.  **Decision on `/qa-e2e-resolve`'s option matrix** — For each FAIL case, choose among `spec` modification / TC modification / FE modification / Archived / Pending. This involves judging "whether the FE is correct or the TC is correct."
+5.  **Review of [capture-report.md](http://capture-report.md/)'s PNGs** — Verify if a PASS result truly validated the intended screen. Especially in cases of false positives, such as with `toBeHidden()` types.
+
+Among these five points, (3) PR review and (4) option matrix decision are the moments when the main process retrieves results and hands them over to a human if the writer ↔ critic cycle in the "Agent Pair" section fails to reach an agreement.
+
+## Remaining Challenges and Next Rounds
+
+The current structure still has areas requiring significant human effort and tasks deferred to the next round of missions.
+
+-   Remove mock API
+    -   The login flow is blocked by Cloudflare Captcha, making actual API verification virtually impossible. If a BE test account or dedicated login path is provided, mock dependencies can be removed, and regression reliability can be increased.
+-   Add an agent that reads design documents to generate TC documents during new feature development.
+    -   To proceed with the current flow and TDD flow during feature development, new TCs must also be directly added to the current TC document.
+-   A learning flow via QA tickets: formalize "why a certain TC failed to verify this" and accumulate it as a `ref` rule. Reinforcement is needed to ensure a bug missed once is not missed again.
+-   Add a flow to capture screenshots at the moment an event is triggered
+    -   Currently, only the UI at the end of a step is saved as a PNG. Capturing the screen at the moment of a click/input would increase review accuracy.
+-   Refine the TC format itself
+    -   While the focus so far has been on transcribing the "answer sheet as is," the next round will likely involve refining the answer sheet itself into a format that AI can work with more effectively.
+
+## In Summary
+
+Building this flow reaffirmed my realization that AI cannot replace everything.
+
+The areas that AI can be delegated are limited, and there are still clear parts where human intervention is necessary. It seems unlikely that this flow will change in a human-driven world, even if the underlying models evolve.
+
+Unless it's a flow that generates definitive answers, humans must always determine the direction.
+
+In this context, the harness acts as a boundary, ensuring that AI does not infer alone in ambiguity but clearly identifies areas requiring human intervention.
+
+While various methodologies may emerge in the future, I believe this kind of flow will not significantly change.
