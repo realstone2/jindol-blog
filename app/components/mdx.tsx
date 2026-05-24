@@ -66,7 +66,7 @@ function CustomLink(props) {
 
 function RoundedImage(props) {
   return (
-    <Image
+    <image
       alt={props.alt}
       className="rounded-2xl shadow-lg"
       {...props}
@@ -105,7 +105,7 @@ function createHeading(level) {
           className: "anchor",
         }),
       ],
-      children
+      children,
     );
   };
 
