@@ -1,98 +1,87 @@
-# Portfolio Blog Starter
+# Welcome to React Router!
 
-This is a porfolio site template complete with a blog. Includes:
+A modern, production-ready template for building full-stack React applications using React Router.
 
-- MDX and Markdown support
-- Optimized for SEO (sitemap, robots, JSON-LD schema)
-- RSS Feed
-- Dynamic OG images
-- Syntax highlighting
-- Tailwind v4
-- Vercel Speed Insights / Web Analytics
-- Geist font
-- Notion integration with auto-sync
-- Multi-language support (Korean/English)
-- Gemini AI translation
-- S3 image hosting with automatic optimization
-- GitHub Discussions comments (Giscus)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
 
-## Demo
+## Features
 
-https://portfolio-blog-starter.vercel.app
+- 🚀 Server-side rendering
+- ⚡️ Hot Module Replacement (HMR)
+- 📦 Asset bundling and optimization
+- 🔄 Data loading and mutations
+- 🔒 TypeScript by default
+- 🎉 TailwindCSS for styling
+- 📖 [React Router docs](https://reactrouter.com/)
 
-## Environment Variables
+## Getting Started
 
-Create a `.env.local` file in the root directory with the following variables:
+### Installation
 
-```env
-# Notion API (Required)
-NOTION_API_KEY=secret_xxx
-NOTION_DATABASE_ID=xxx
-
-# Gemini API (Optional - for auto-translation)
-GEMINI_API_KEY=xxx
-
-# AWS S3 (Optional - for image hosting)
-S3_BUCKET_NAME=your-blog-images
-AWS_REGION=ap-northeast-2
-AWS_ACCESS_KEY_ID=xxx
-AWS_SECRET_ACCESS_KEY=xxx
-CLOUDFRONT_DOMAIN=xxx.cloudfront.net  # Optional - for CDN
-
-# Giscus Comments (Optional - for blog comments)
-NEXT_PUBLIC_GISCUS_REPO=your-username/your-repo
-NEXT_PUBLIC_GISCUS_REPO_ID=R_xxx
-NEXT_PUBLIC_GISCUS_CATEGORY=Announcements
-NEXT_PUBLIC_GISCUS_CATEGORY_ID=DIC_xxx
-```
-
-See `.env.example` for a complete list of environment variables.
-
-### AWS S3 Setup (Optional)
-
-If you want to host images on S3:
-
-1. Create an S3 bucket in AWS
-2. Set up IAM credentials with S3 write permissions
-3. (Optional) Set up CloudFront CDN for faster image delivery
-4. Add AWS credentials to `.env.local`
-
-Without S3 configuration, images will use Notion's URLs (which expire after 1 hour).
-
-### Giscus Comments Setup (Optional)
-
-To enable GitHub Discussions-based comments:
-
-1. Enable **Discussions** in your GitHub repository (Settings → Features)
-2. Install [Giscus App](https://github.com/apps/giscus) to your repository
-3. Go to [giscus.app](https://giscus.app) and configure your settings
-4. Add the generated values to `.env.local`
-
-See [GISCUS_SETUP.md](./GISCUS_SETUP.md) for detailed instructions.
-
-## How to Use
-
-You can choose from one of the following two methods to use this repository:
-
-### One-Click Deploy
-
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/examples/tree/main/solutions/blog&project-name=blog&repository-name=blog)
-
-### Clone and Deploy
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [pnpm](https://pnpm.io/installation) to bootstrap the example:
+Install the dependencies:
 
 ```bash
-pnpm create next-app --example https://github.com/vercel/examples/tree/main/solutions/blog blog
+npm install
 ```
 
-Then, run Next.js in development mode:
+### Development
+
+Start the development server with HMR:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
-Deploy it to the cloud with [Vercel](https://vercel.com/templates) ([Documentation](https://nextjs.org/docs/app/building-your-application/deploying)).
-# jindol-blog
+Your application will be available at `http://localhost:5173`.
+
+## Building for Production
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+## Deployment
+
+### Docker Deployment
+
+To build and run using Docker:
+
+```bash
+docker build -t my-app .
+
+# Run the container
+docker run -p 3000:3000 my-app
+```
+
+The containerized application can be deployed to any platform that supports Docker, including:
+
+- AWS ECS
+- Google Cloud Run
+- Azure Container Apps
+- Digital Ocean App Platform
+- Fly.io
+- Railway
+
+### DIY Deployment
+
+If you're familiar with deploying Node applications, the built-in app server is production-ready.
+
+Make sure to deploy the output of `npm run build`
+
+```
+├── package.json
+├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
+├── build/
+│   ├── client/    # Static assets
+│   └── server/    # Server-side code
+```
+
+## Styling
+
+This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+
+---
+
+Built with ❤️ using React Router.

@@ -28,7 +28,7 @@ async function commitNotionChanges() {
     console.log("🔍 변경 사항 확인 중...\n");
 
     // 변경된 파일 스테이징
-    const postsDir = join(process.cwd(), "app", "blog", "posts");
+    const postsDir = join(process.cwd(), "content", "posts");
     const koDir = join(postsDir, "ko");
     const enDir = join(postsDir, "en");
     const cacheFile = join(process.cwd(), ".translation-cache.json");

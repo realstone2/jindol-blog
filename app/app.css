@@ -1,0 +1,241 @@
+@import "pretendard/dist/web/static/pretendard.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+
+  /* 우드 팔레트 — design_handoff_dev_blog 디자인 토큰 */
+  --color-page: #fbf6ee;
+  --color-page-alt: #fcf9f3;
+  --color-sub: #f1e7d6;
+  --color-card: #f3e9d8;
+  --color-card-alt: #f4eada;
+  --color-ink: #33291e;
+  --color-body: #40352a;
+  --color-muted: #6b5d4c;
+  --color-chip-text: #5c4e3d;
+  --color-faint: #7a6c58;
+  --color-faint-2: #8b7c67;
+  --color-faint-3: #a2917a;
+  --color-wood: #9a6a43;
+  --color-wood-strong: #a9613a;
+  --color-wood-soft: #b07a45;
+  --color-terracotta: #c6763e;
+  --color-highlight: #e7b37f;
+  --color-cream: #fcf6ee;
+  --color-dark-sub: #b7a78e;
+  --color-line: #ede2cf;
+  --color-line-soft: #eadfcb;
+  --color-line-strong: #e0d2bb;
+  --color-line-faint: #eee3d0;
+  --color-line-btn: #dccdb4;
+  --color-badge: #f3e4d3;
+  --color-code-bg: #2e251c;
+  --color-code-text: #e9d9c2;
+
+  --shadow-card: 0 26px 60px -30px rgba(80, 55, 30, 0.35);
+  --shadow-card-lg: 0 30px 70px -30px rgba(80, 55, 30, 0.35);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* sugar-high 코드 하이라이트 — 디자인 코드블록 토큰 */
+:root {
+  --sh-class: #e7b37f;
+  --sh-identifier: #e9d9c2;
+  --sh-sign: #b7a78e;
+  --sh-property: #e7b37f;
+  --sh-entity: #c89b6e;
+  --sh-jsxliterals: #e7b37f;
+  --sh-string: #9db88a;
+  --sh-keyword: #c89b6e;
+  --sh-comment: #8b7c67;
+}
+
+/* 글 상세 본문 타이포그래피 (3b 명세) */
+.prose {
+  font-size: 17.5px;
+  line-height: 1.9;
+  color: var(--color-body);
+}
+
+.prose p {
+  margin: 0 0 24px;
+}
+
+.prose h1,
+.prose h2 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin: 44px 0 16px;
+  line-height: 1.4;
+}
+
+.prose h3,
+.prose h4 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin: 40px 0 14px;
+  line-height: 1.4;
+}
+
+.prose h5,
+.prose h6 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 32px 0 12px;
+}
+
+.prose h1:first-child,
+.prose h2:first-child,
+.prose h3:first-child,
+.prose h4:first-child {
+  margin-top: 0;
+}
+
+.prose a {
+  color: var(--color-wood-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-line-btn);
+  transition: text-decoration-color 0.15s ease;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-wood-strong);
+}
+
+.prose strong {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.prose blockquote {
+  margin: 0 0 26px;
+  padding: 6px 0 6px 24px;
+  border-left: 3px solid var(--color-terracotta);
+}
+
+.prose blockquote p {
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.prose pre {
+  background: var(--color-code-bg);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin: 0 0 26px;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--color-code-text);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--color-sub);
+  color: var(--color-wood-strong);
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.prose img {
+  border-radius: 14px;
+  margin: 8px 0 26px;
+  max-width: 100%;
+  height: auto;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 24px;
+  padding-left: 26px;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li {
+  margin-bottom: 8px;
+}
+
+.prose li::marker {
+  color: var(--color-wood-soft);
+}
+
+.prose hr {
+  border: none;
+  height: 1px;
+  background: var(--color-line);
+  margin: 40px 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 26px;
+}
+
+.prose th {
+  text-align: left;
+  font-weight: 700;
+  color: var(--color-ink);
+  background: var(--color-sub);
+  padding: 10px 14px;
+  border: 1px solid var(--color-line-soft);
+}
+
+.prose td {
+  padding: 10px 14px;
+  border: 1px solid var(--color-line-soft);
+  color: var(--color-body);
+}
+
+.prose details {
+  margin: 0 0 24px;
+  background: var(--color-card);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.prose details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--color-ink);
+}

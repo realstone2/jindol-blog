@@ -232,7 +232,7 @@ async function syncNotion() {
 
   try {
     // 포스트 디렉토리 경로
-    const postsDir = join(process.cwd(), "app", "blog", "posts");
+    const postsDir = join(process.cwd(), "content", "posts");
 
     // 디렉토리 생성 (없는 경우)
     await mkdir(postsDir, { recursive: true });
