@@ -23,34 +23,29 @@ export const siteConfig = {
     linkedin: "https://www.linkedin.com/in/jindol-487b8332a/",
     email: "yeojinseok@kakao.com",
     /** public/ 아래 프로필 사진 경로 (없으면 이니셜 플레이스홀더 표시) */
-    avatar: null as string | null,
+    avatar: "/profile.jpg" as string | null,
   },
   about: {
-    location: { ko: "📍 서울, 대한민국", en: "📍 Seoul, Korea" },
-    years: {
-      ko: "🌱 불편한 건 그냥 못 지나칩니다",
-      en: "🌱 Can't ignore friction when I see it",
-    },
     stack: ["React", "React Native", "Remix", "Next"],
     kicker: { ko: "소개", en: "ABOUT" },
     headline: {
-      ko: "제품과 함께\n팀의 개발 방식도 개선합니다.",
-      en: "I improve the product —\nand how the team builds it.",
+      ko: "더 나은 방식을\n계속 고민하는 개발자입니다.",
+      en: "A developer who keeps asking\nif there's a better way.",
     },
     intro: {
-      ko: "반복되는 비효율과 불편함을 그냥 지나치지 못하는 편입니다. 문제라고 느끼면 적극적으로 의견을 내고, 도구와 방법론으로 만들어 팀의 개발 방식을 개선하는 걸 좋아합니다. 기획·디자인·백엔드와 문제를 빠르게 공유하며 부드럽고 명확하게 소통하는 것을 중요하게 생각해요. 이 블로그에는 그 과정에서 배운 것들을 기록합니다.",
-      en: "I can't just walk past repeated inefficiency or friction — when something feels wrong, I speak up and turn it into tools and methodology that improve how the team builds. I value fast, clear communication with PMs, designers, and backend engineers. This blog is a record of what I learn along the way.",
+      ko: "지금의 방식에 안주하기보다 더 나은 방법을 찾아 제안하는 걸 좋아합니다. 커머스 도메인에서 제품과 팀의 개발 경험을 함께 다듬어가고 있습니다.",
+      en: "Rather than settling for how things are, I like finding and proposing better ways. I work in commerce, refining both the product and the team's developer experience.",
     },
     timeline: [
       {
         period: "2026—",
         title: {
-          ko: "올리브영 · US 커머스플랫폼개발팀",
-          en: "Olive Young · US Commerce Platform Team",
+          ko: "올리브영 · 프론트엔드 엔지니어",
+          en: "Olive Young · Frontend Engineer",
         },
         description: {
-          ko: "Remix(React Router v7) 기반으로 글로벌 커머스 웹을 개발하고 있습니다.",
-          en: "Building a global commerce web experience with Remix (React Router v7).",
+          ko: "회원 스쿼드에서 US 올리브영 개발을 담당하고 있습니다.",
+          en: "Building US Olive Young on the membership squad.",
         },
       },
       {

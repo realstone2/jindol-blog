@@ -73,12 +73,8 @@ export default function About({ loaderData }: Route.ComponentProps) {
             <div className="mb-1 text-[23px] font-extrabold tracking-[-0.02em] sm:text-[26px]">
               {name}
             </div>
-            <div className="mb-3.5 text-[14px] font-semibold text-wood sm:mb-5 sm:text-[15px]">
+            <div className="mb-5 text-[14px] font-semibold text-wood sm:mb-[26px] sm:text-[15px]">
               {author.role[lang]}
-            </div>
-            <div className="mb-5 flex justify-center gap-4 text-[13px] text-muted sm:mb-[26px] sm:flex-col sm:justify-start sm:gap-[9px] sm:text-[14.5px]">
-              <span>{about.location[lang]}</span>
-              <span>{about.years[lang]}</span>
             </div>
             <div className="mb-5 hidden h-px bg-line-strong sm:block sm:mb-[26px]" />
             <div className="hidden sm:block">

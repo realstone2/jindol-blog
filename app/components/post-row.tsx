@@ -55,12 +55,15 @@ export function PostRow({
         className="h-44 w-full shrink-0 sm:h-32 sm:w-[196px]"
       />
       <div className="flex-1">
-        <div className="mb-[9px] flex items-center gap-2.5">
-          {post.metadata.tags[0] && (
-            <span className="rounded-md bg-badge px-[11px] py-1 text-[12.5px] font-bold text-wood-strong">
-              {post.metadata.tags[0]}
+        <div className="mb-[9px] flex flex-wrap items-center gap-2.5">
+          {post.metadata.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-md bg-badge px-[11px] py-1 text-[12.5px] font-bold text-wood-strong"
+            >
+              {tag}
             </span>
-          )}
+          ))}
           <span className="text-[13px] text-faint-3">
             {formatDate(post.metadata.publishedAt, lang)} ·{" "}
             {t.post.min(post.readingMinutes)}

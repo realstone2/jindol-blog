@@ -71,6 +71,14 @@ export function extractMetadata(page: NotionPage): PageMetadata {
   } else if (properties.Tags?.multi_select) {
     // 복수형
     tags = properties.Tags.multi_select.map((tag: any) => tag.name);
+  } else if (properties.tag?.rich_text) {
+    // Rich text 타입 — 쉼표 구분 문자열 (예: "React, 반응형, SSR")
+    tags = properties.tag.rich_text
+      .map((segment: any) => segment.plain_text ?? "")
+      .join("")
+      .split(",")
+      .map((tag: string) => tag.trim())
+      .filter(Boolean);
   }
 
   // 언어는 기본값으로 한국어 (자동 번역으로 영어 생성)

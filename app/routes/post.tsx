@@ -117,12 +117,15 @@ export default function Post({ loaderData }: Route.ComponentProps) {
     <>
       <ReadingProgress />
       <main className="mx-auto max-w-[780px] px-6 pt-12 pb-[60px] sm:px-11 lg:px-0">
-        <div className="mb-[18px] flex items-center gap-2.5">
-          {post.metadata.tags[0] && (
-            <span className="rounded-md bg-badge px-[11px] py-1 text-[12.5px] font-bold text-wood-strong">
-              {post.metadata.tags[0]}
+        <div className="mb-[18px] flex flex-wrap items-center gap-2.5">
+          {post.metadata.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-md bg-badge px-[11px] py-1 text-[12.5px] font-bold text-wood-strong"
+            >
+              {tag}
             </span>
-          )}
+          ))}
           <span className="text-[13.5px] text-faint-3">
             {formatDate(post.metadata.publishedAt, lang)} ·{" "}
             {t.post.minRead(post.readingMinutes)}
