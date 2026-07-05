@@ -9,7 +9,8 @@
     "typecheck": "react-router typegen && tsc",
     "sync-notion": "tsx scripts/sync-notion.ts",
     "commit-notion": "tsx scripts/git-commit.ts",
-    "sync-and-commit": "pnpm sync-notion && pnpm commit-notion"
+    "sync-and-commit": "pnpm sync-notion && pnpm commit-notion",
+    "sync-one": "tsx scripts/sync-one.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",
