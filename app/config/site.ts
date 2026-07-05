@@ -28,18 +28,18 @@ export const siteConfig = {
   about: {
     location: { ko: "📍 서울, 대한민국", en: "📍 Seoul, Korea" },
     years: {
-      ko: "🌱 2022년부터 웹을 만드는 중",
-      en: "🌱 Building the web since 2022",
+      ko: "🌱 불편한 건 그냥 못 지나칩니다",
+      en: "🌱 Can't ignore friction when I see it",
     },
-    stack: ["TypeScript", "React", "React Router", "React Native", "TanStack Query"],
+    stack: ["React", "React Native", "Remix", "Next"],
     kicker: { ko: "소개", en: "ABOUT" },
     headline: {
       ko: "제품과 함께\n팀의 개발 방식도 개선합니다.",
       en: "I improve the product —\nand how the team builds it.",
     },
     intro: {
-      ko: "반복되는 비효율을 발견하면 도구와 방법론으로 만드는 걸 좋아합니다. AI를 활용해 운영 업무 시간을 90% 줄이고, API Hook 자동 생성 도구로 팀의 Best Practice를 만들었습니다. 기획·디자인·백엔드와 문제를 빠르게 공유하며 부드럽고 명확하게 소통하는 것을 중요하게 생각해요. 이 블로그에는 그 과정에서 배운 것들을 기록합니다.",
-      en: "When I spot repeated inefficiency, I like turning it into tools and methodology. I've cut operations work by 90% with AI and built an API hook generator that became the team's best practice. I value fast, clear communication with PMs, designers, and backend engineers. This blog is a record of what I learn along the way.",
+      ko: "반복되는 비효율과 불편함을 그냥 지나치지 못하는 편입니다. 문제라고 느끼면 적극적으로 의견을 내고, 도구와 방법론으로 만들어 팀의 개발 방식을 개선하는 걸 좋아합니다. 기획·디자인·백엔드와 문제를 빠르게 공유하며 부드럽고 명확하게 소통하는 것을 중요하게 생각해요. 이 블로그에는 그 과정에서 배운 것들을 기록합니다.",
+      en: "I can't just walk past repeated inefficiency or friction — when something feels wrong, I speak up and turn it into tools and methodology that improve how the team builds. I value fast, clear communication with PMs, designers, and backend engineers. This blog is a record of what I learn along the way.",
     },
     timeline: [
       {
@@ -56,26 +56,18 @@ export const siteConfig = {
       {
         period: "2022—25",
         title: {
-          ko: "루코(Looko) · 프론트엔드 엔지니어",
+          ko: "룩코(Looko) · 프론트엔드 엔지니어",
           en: "Looko · Frontend Engineer",
         },
         description: {
-          ko: "빈티지 커머스 SecondSold와 AI 디지털 옷장 Acloset을 개발하며 B2B/B2C 커머스 생태계 전체를 경험했습니다. SEO 최적화, 웹뷰 실험 환경 구축, 대용량 데이터 처리 문제를 해결했어요.",
-          en: "Built the vintage commerce platform SecondSold and the AI digital closet Acloset, covering the full B2B/B2C commerce ecosystem — SEO, WebView infrastructure, and large-scale data handling.",
-        },
-      },
-      {
-        period: "2022",
-        title: { ko: "웹의 세계로", en: "Into the web" },
-        description: {
-          ko: "컴퓨터소프트웨어학과를 졸업하고 패션 테크 스타트업에서 커리어를 시작했습니다.",
-          en: "Graduated in computer software and started my career at a fashion tech startup.",
+          ko: "빈티지 커머스 SecondSold와 AI 디지털 옷장 Acloset을 개발하며 B2B/B2C 커머스 생태계 전체를 경험했습니다. SEO 최적화, 웹뷰 실험 환경 구축, 브라우저에서의 대용량 데이터 처리 문제를 해결했어요.",
+          en: "Built the vintage commerce platform SecondSold and the AI digital closet Acloset, covering the full B2B/B2C commerce ecosystem — SEO, WebView infrastructure, and large-scale in-browser data handling.",
         },
       },
     ],
     interests: {
-      ko: ["React Router v7", "AI Native 개발"],
-      en: ["React Router v7", "AI-native development"],
+      ko: ["AI Native 개발", "웹 인증/보안"],
+      en: ["AI-native development", "Web auth & security"],
     },
   },
   giscus: {
