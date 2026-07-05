@@ -1,24 +1,24 @@
 ---
-title: "How to Develop PC/Mobile Responsive Web? (I Really Don't Know)"
+title: "How Should We Develop Responsive Web for PC/Mobile? (Seriously, I Don't Know)"
 publishedAt: "2026-07-05"
 summary: ""
 language: "en"
-tags: ["React", "반응형", "클린코드"]
+tags: ["React", "Responsive", "Clean Code"]
 ---
 
 ## Introduction
 
-We needed to launch the service quickly. We divided the pages, developed them concurrently, and while the requirement for a "responsive design that supports both PC and mobile with a single URL" was clear, we lacked conventions on how to implement it.
+We had to launch the service quickly. We divided the pages, developed them simultaneously, and while the requirement for a "responsive design that supports both PC and mobile with a single URL" was clear, we lacked conventions on how to implement it.
 
-Some used CSS media queries, some rendered both mobile and PC versions and hid one, some completely separated components into two versions, and some branched logic using JS hooks.
+Some used CSS media queries, some rendered both mobile and PC versions and hid one, some completely split components into two versions, and some branched logic using JS hooks.
 
-As we entered the maintenance phase, the same "responsive modification" required understanding the structure from scratch each time, as the approach differed per file. Reviews were fragmented, jumping between files, and with two designs but one codebase, every modification required checking if it broke the other version. While developing, moments of "Is this right?" became increasingly frequent.
+Once we entered the maintenance phase, the same "responsive modification" required understanding the structure from scratch every time, as the approach differed per file. Reviews were disrupted by constantly switching between files, and with two designs but one codebase, we had to repeatedly check if a single modification broke the other version. Moments of "Is this right?" became increasingly frequent during development.
 
 ## How Our Team Implements Responsive Design
 
 A comprehensive review of the codebase revealed four distinct approaches.
 
-1.  **Inline Media Queries.** The most common choice. Mobile styles are set as default and overridden for desktop. There are aspects to commend — over 98% of files using this method reference central media query tokens, and the mobile-first principle is well-maintained. There was discipline:
+1.  **Inline Media Queries.** The most common choice. Mobile styles are set as default and overridden for desktop. There are commendable aspects — over 98% of files using this method reference central media query tokens, and the mobile-first principle is well-maintained. There was discipline:
 
 ```typescript
 // SomeButton.css.ts
@@ -39,13 +39,13 @@ export const button = style({
 ```typescript
 // ItemList.tsx
 <div className={styles.itemList}>
-  <ItemListMobile items={items} />   {/* PC에서 display:none */}
-  <ItemListDesktop items={items} />  {/* 모바일에서 display:none */}
+  <ItemListMobile items={items} />   {/* display:none on PC */}
+  <ItemListDesktop items={items} />  {/* display:none on mobile */}
 </div>
 ```
 
 ```typescript
-// ItemList.css.ts — 숨김 규칙
+// ItemList.css.ts — Hiding Rules
 export const mobileWrapper = style({
   display: 'flex', flexDirection: 'column', gap: 16,
   '@media': { [tokens.mediaQuery.desktop]: { display: 'none' } },
@@ -56,10 +56,10 @@ export const desktopWrapper = style({
 });
 ```
 
-My Page sections are a hotspot for this pattern (around 40 files using wrappers). From the recent orders section, which mounts the same data as two versions – a carousel (mobile) and a table (PC) – there are even screens where titles appear in two versions just for a single typography size difference (16px vs 18px):
+My Page sections are a dense area for this pattern (around 40 files using wrappers). From the recent orders section, which mounts the same data as two versions—a carousel (mobile) and a table (PC)—to screens where even a single typography size difference (16px vs 18px) results in two versions of a title:
 
 ```typescript
-// 프로필 설정 화면의 섹션 제목 — 폰트 크기 하나 때문에 두 벌
+// Section title on profile settings screen — two versions due to a single font size
 <MobileView>
   <Box pt={12} pb={8}>
     <Typography as="p" variant="16px" weight="bold">{section.title}</Typography>
@@ -70,10 +70,10 @@ My Page sections are a hotspot for this pattern (around 40 files using wrappers)
 </DesktopView>
 ```
 
-3.  **Complete Component Separation.** For areas with entirely different structures, like headers, files were separated into `DesktopHeader`/`MobileHeader`. Each file is a single layout without `@media`, so it can be read considering only one device:
+3.  **Complete Component Separation.** For areas with entirely different structures, like headers, files were separated into `DesktopHeader`/`MobileHeader`. Each file is a single layout without `@media`, so it can be read by considering only one device:
 
 ```typescript
-// DesktopHeader.tsx — @media 없는 단일 레이아웃
+// DesktopHeader.tsx — Single layout without @media
 export function DesktopHeader({ leftSlot, centerSlot, rightSlot }: DesktopHeaderProps) {
   return (
     <header role="banner">
@@ -85,38 +85,38 @@ export function DesktopHeader({ leftSlot, centerSlot, rightSlot }: DesktopHeader
     </header>
   );
 }
-// MobileHeader.tsx는 햄버거 버튼 + 검색 아이콘 구조로 완전히 다른 파일
+// MobileHeader.tsx is a completely different file with a hamburger button + search icon structure
 ```
 
-However, the branching point for choosing between the two ultimately reverted to B (dual render) — file separation was clean, but there was no standard for "what to use as the branching point":
+However, the branching point for choosing between the two ultimately used approach B (dual render) — file separation was clean, but there was no standard for "what should be the branching point":
 
 ```typescript
-// 분기점 — 두 벌을 모두 렌더하고 CSS로 토글 (C와 B의 조합)
+// Branching point — renders both versions and toggles with CSS (combination of C and B)
 <MobileView><MobileHeader /></MobileView>
 <DesktopView><DesktopHeader /></DesktopView>
 ```
 
-There are also cases where complete separation was done, but the branching point selection differed. All 8 sections of the membership page are Desktop/Mobile function pairs, but the selection is made by JS, not CSS:
+There are also cases where complete separation is used, but the branching point selection differs. All 8 sections of the membership page consist of Desktop/Mobile function pairs, but the selection is made by JS, not CSS:
 
 ```typescript
-// 멤버십 등급 배너 — 약 160줄 (Desktop 함수 + Mobile 함수)
+// Membership tier banner — approx. 160 lines (Desktop function + Mobile function)
 function TierBannerDesktop() {
   const { data } = useSuspenseQuery(membershipQueries.summary());
-  // …등급 계산, 진행률, 실적 모달 핸들러…
-  return <Box className={styles.desktopBanner}>{/* 가로 배너 + 우측 카드 */}</Box>;
+  // …tier calculation, progress, performance modal handler…
+  return <Box className={styles.desktopBanner}>{/* Horizontal banner + right card */}</Box>;
 }
 function TierBannerMobile() {
   const { data } = useSuspenseQuery(membershipQueries.summary());
-  // …완전히 같은 로직이 한 번 더…
-  return <VStack px={16}>{/* 세로 스택 + 말풍선 카드 */}</VStack>;
+  // …exactly the same logic again…
+  return <VStack px={16}>{/* Vertical stack + speech bubble card */}</VStack>;
 }
 export function TierBanner() {
-  const platform = usePlatform(); // SSR 초기값 'PC' 고정 + matchMedia 판정
+  const platform = usePlatform(); // SSR initial value fixed to 'PC' + matchMedia determination
   return platform === 'PC' ? <TierBannerDesktop /> : <TierBannerMobile />;
 }
 ```
 
-The two functions have identical data hooks and calculation logic, differing only in JSX (approx. 30 lines of duplication). While separated, shared logic was not extracted, leading to duplication, and since the branching is done by JS, the SSR cost remains the same.
+The two functions have identical data hooks and calculation logic, differing only in JSX (approx. 30 lines of duplication). While separated, shared logic was not extracted, leading to duplication, and since the branching is in JS, the SSR cost remains the same.
 
 4.  **JS Hook Prop Branching.** Within a single component, values, text, and spacing are all branched using ternary operators:
 
@@ -135,38 +135,38 @@ return (
 );
 ```
 
-All four methods "work". The problem is that they coexist within a single codebase, and are even mixed within a single screen.
+All four methods "work." The problem is that they coexist within a single codebase and are even mixed within a single screen.
 
-The four patterns not only vary by file but are also mixed within a single page — My Page is a hotspot for B, while Membership uses C for separation and D for selection. Real-world examples are included with each pattern description.
+The four patterns not only vary by file but also mix within a single page — My Page is a dense area for B, while Membership uses C for separation and D for selection. Real-world examples are included with each pattern description.
 
-## Inconveniences Experienced During Development
+## Actual Inconveniences Experienced During Development
 
-The above describes the current situation, and below are the inconveniences I've experienced.
+The above describes the current situation, and below are the inconveniences I've felt.
 
 ### 1. CSS Complexity — One File Responsible for Two Layouts
 
-The real issue isn't just value differences like font sizes. It's **when a single file is responsible for two UIs with fundamentally different layout structures**. The review detail popup style file is **over 500 lines long with 26 `@media` blocks** — it's a vertical stack on mobile and a two-column layout on PC, so almost every selector has an inverted branch:
+The real problem isn't value differences like font size. It's **when a single file is simultaneously responsible for two UIs with fundamentally different layout structures.** The review detail popup style file is **over 500 lines with 26 `@media` blocks** — it's a vertical stack on mobile and a two-column layout on PC, so almost every selector has an inverted branch:
 
 ```typescript
-// ReviewPopup.css.ts (500여 줄 중) — 세로 스택 ↔ 좌우 2단 전환
+// ReviewPopup.css.ts (out of ~500 lines) — Vertical stack ↔ Two-column layout switch
 export const container = style({
   display: 'flex',
-  flexDirection: 'column',   // 모바일: 세로 스택
+  flexDirection: 'column',   // Mobile: Vertical stack
   height: '100%',
   '@media': {
     [tokens.mediaQuery.desktop]: {
-      flexDirection: 'row',  // PC: 좌우 배치로 전환
+      flexDirection: 'row',  // PC: Switches to horizontal layout
       height: '640px',
       gap: '32px',
     },
   },
 });
 export const contentPane = style({
-  width: '100%',             // 모바일: 전체 폭
+  width: '100%',             // Mobile: Full width
   paddingTop: '24px',
   '@media': {
     [tokens.mediaQuery.desktop]: {
-      width: '50%',          // PC: 절반 폭
+      width: '50%',          // PC: Half width
       padding: 0,
     },
   },
@@ -176,56 +176,56 @@ export const contentPane = style({
 The common overlay takes it a step further, with a single file responsible for **two distinct components: a mobile bottom sheet and a PC central modal**:
 
 ```typescript
-// OverlayLayer.css.ts — 바텀시트 ↔ 모달 전환
+// OverlayLayer.css.ts — Bottom sheet ↔ Modal switch
 const dimmed = style({
   position: 'fixed',
   inset: 0,
   display: 'flex',
   justifyContent: 'center',
-  alignItems: 'end',          // 모바일: 하단 정렬 (바텀시트)
+  alignItems: 'end',          // Mobile: Aligned to bottom (bottom sheet)
   '@media': {
     [tokens.mediaQuery.desktop]: {
-      alignItems: 'center',   // PC: 중앙 정렬 (모달)
+      alignItems: 'center',   // PC: Centered (modal)
     },
   },
 });
 const panel = style({
   width: '100%',
-  borderRadius: '16px 16px 0 0',      // 모바일: 위쪽만 둥글게
-  transform: 'translate(0, 100%)',    // 모바일: 하단 오프스크린에서 올라옴
+  borderRadius: '16px 16px 0 0',      // Mobile: Rounded only at the top
+  transform: 'translate(0, 100%)',    // Mobile: Slides up from off-screen bottom
   '@media': {
     [tokens.mediaQuery.desktop]: {
-      borderRadius: 0,                // PC: 모서리 없음
+      borderRadius: 0,                // PC: No rounded corners
       width: '480px',
     },
   },
 });
 ```
 
-The CTA button on the payment page is a fixed bottom bar on mobile and inline within the body on PC — `position: fixed ↔ static` is inverted within a single style block. On top of this, `14px→16px` type typography pairs are repeated across dozens of files. These files are not truly "a single responsive file" but rather **two distinct UIs compressed into one file**.
+The CTA button on the payment page is a fixed bottom bar on mobile and inline within the content on PC — `position: fixed ↔ static` is inverted within a single style block. On top of this, `14px→16px` type typography pairs are repeated across dozens of files. These files are not truly "one responsive file" but rather **two different UIs compressed into a single file.**
 
-### 2. Constant Round Trips Between `tsx` and `css.ts` for Review/Modification
+### 2. Constant Switching Between `tsx` ↔ `css.ts` During Review and Modification
 
-During code reviews, to understand a single layout change, one must read the `.tsx` file, then go to the `.css.ts` file to find the class, and then return to check the conditions. What's worse is **when a single component uses both CSS and JS branching simultaneously** — product details change `flex-order` with `@media` in `.css.ts` while branching margins with `isMobile ? 16 : 0` in `.tsx`. Understanding a single layout requires navigating **two files and two mechanisms**.
+To understand a single layout change during code review, one must read the `.tsx` file, then go to the `.css.ts` file to find the class, and then return to check the conditions. What's worse is **when a single component uses both CSS branching and JS branching simultaneously** — product details change `flex-order` with `@media` in `.css.ts` while branching margins with `isMobile ? 16 : 0` in `.tsx`. Understanding a single layout requires navigating between **two files and two mechanisms.**
 
-### 3. Designs Come in Two Versions, But Code is One
+### 3. Designs Come in Two Versions, But Code is in One
 
--   Both design mockups and product requirements come in **two versions: mobile/desktop**. However, the code is merged into a single file.
--   QA and testing also always involve two versions — if one side is fixed, the other must be checked every time to ensure it hasn't broken.
--   This is critical when working with AI: "Apply mobile mockup" and "Apply PC mockup" **modify the same file, making parallel work impossible**. If the files were separated, two agents (or two people) could work simultaneously.
+-   Both design mockups and product requests come in **two versions: mobile/desktop**. However, the code is merged into a single file.
+-   QA and testing also always involve two versions — if one side is fixed, we must constantly check if the other side is broken.
+-   This is critical when working with AI: "Apply mobile design" and "Apply PC design" **modify the same file, making parallel work impossible.** If the files were separated, two agents (or two people) could work simultaneously.
 
 ## Why Does Development Feel So Inconvenient and Difficult?
 
 I wanted to determine if the inconvenience was merely a matter of familiarity or a structural problem explainable by principles.
 
-Toss's [frontend-fundamentals](https://frontend-fundamentals.com/) defines good code by four criteria: **readability, predictability, cohesion, and coupling**. I've taken examples directly from four representative documents and applied our responsive code to the same format.
+Toss's [frontend-fundamentals](https://frontend-fundamentals.com/) defines good code by four criteria: **Readability, Predictability, Cohesion, and Coupling.** I've taken examples directly from four representative documents and applied our responsive code to the same format.
 
-### 1. Separate Non-Co-Executing Code — Readability
+### 1. Separating Code That Doesn't Execute Together — Readability
 
-The [original text](https://frontend-fundamentals.com/code-quality/code/examples/submit-button.html) uses a button that behaves differently based on permissions as an example:
+The [original text](https://frontend-fundamentals.com/code-quality/code/examples/submit-button.html) gives an example of a button that behaves differently based on permissions:
 
 ```typescript
-// 토스 원문 — Before
+// Toss Original — Before
 function SubmitButton() {
   const isViewer = useRole() === "viewer";
   useEffect(() => {
@@ -240,12 +240,12 @@ function SubmitButton() {
 }
 ```
 
-> Code that doesn't execute simultaneously appears interleaved, making it burdensome to understand the code.
+> Code that doesn't execute simultaneously appears interleaved, creating a burden when trying to understand the code.
 
-Now, if we replace `isViewer` with `isMobile`, we can see that pattern D from Chapter 1 exactly matches the 'Before' example in the original text. Looking directly at our code:
+Now, if we replace `isViewer` with `isMobile`, we can see that pattern D from Chapter 1 is exactly the same as the "Before" example in the original text. Looking directly at our code:
 
 ```typescript
-// 우리 코드 — Before: 모바일에서 절대 실행되지 않는 PC 코드가 같은 JSX에 교차
+// Our Code — Before: PC code that never executes on mobile is interleaved in the same JSX
 function OrderInfoRow({ orderNo }: Props) {
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
@@ -260,12 +260,12 @@ function OrderInfoRow({ orderNo }: Props) {
 }
 ```
 
-There are over 370 such interleavings in the codebase.
+There are over 370 such interweavings in the codebase.
 
 The improvement in the original text is to completely separate components by permission:
 
 ```typescript
-// 토스 원문 — After
+// Toss Original — After
 function SubmitButton() {
   const isViewer = useRole() === "viewer";
   return isViewer ? <ViewerSubmitButton /> : <AdminSubmitButton />;
@@ -281,10 +281,10 @@ function AdminSubmitButton() {
 }
 ```
 
-Improving our code in the same way results in each version becoming straightforward code without branching:
+Improving our code in the same way results in each version becoming straight-line code without branching:
 
 ```typescript
-// 우리 코드 — After: 분기는 한 곳, 각 벌은 조건 0개
+// Our Code — After: One branching point, zero conditions per version
 function OrderInfoRow(props: Props) {
   const isMobile = useIsMobile();
   return isMobile ? <OrderInfoRowMobile {...props} /> : <OrderInfoRowDesktop {...props} />;
@@ -308,82 +308,80 @@ function OrderInfoRowDesktop({ orderNo }: Props) {
 }
 ```
 
-### 2. Reduce Context Switching — Readability
+### 2. Reducing Context Switching — Readability
 
-The [original text](https://frontend-fundamentals.com/code-quality/code/examples/user-policy.html) shows code where understanding a single reason for button deactivation requires three jumps:
+The [original text](https://frontend-fundamentals.com/code-quality/code/examples/user-policy.html) shows code where understanding why a button is disabled requires three jumps:
 
 ```typescript
-// 토스 원문 — Before: "Invite 버튼이 왜 비활성화지?" 하나에 세 번 점프
-<Button disabled={!policy.canInvite}>Invite</Button>      // ① policy.canInvite는 어디서?
+// Toss Original — Before: Three jumps to understand "Why is the Invite button disabled?"
+<Button disabled={!policy.canInvite}>Invite</Button>      // ① Where does policy.canInvite come from?
 
-const policy = getPolicyByRole(user.role);                 // ② getPolicyByRole은 뭐를 하지?
+const policy = getPolicyByRole(user.role);                 // ② What does getPolicyByRole do?
 
 function getPolicyByRole(role) {
-  return { canInvite: POLICY_SET[role].includes("invite") }; // ③ POLICY_SET까지 와서야 답
+  return { canInvite: POLICY_SET[role].includes("invite") }; // ③ Only at POLICY_SET do we get the answer
 }
 const POLICY_SET = { admin: ["invite", "view"], viewer: ["view"] };
 ```
 
-> Three jumps just to answer "Why is the Invite button disabled?"
-
 Looking at a real-world example from our code, it's even more dramatic. The path to understanding **when a single share button appears** in the event header component:
 
 ```typescript
-// EventHeader.tsx — ① JS가 isMobile로 플로팅 버튼의 '상태'를 계산
+// EventHeader.tsx — ① JS calculates the 'state' of the floating button with isMobile
 const getFloatingPosition = (isMobile, isAtTop, isScrollingDown) => {
-  if (!isMobile) return 'hidden';        // ② JS 분기: PC면 숨김…이긴 한데
+  if (!isMobile) return 'hidden';        // ② JS branch: Hidden on PC... but then
   if (!isAtTop && isScrollingDown) return 'bottom';
   if (isAtTop && !isScrollingDown) return 'stackOne';
   return 'stackTwo';
 };
 // …
-<div className={styles.staticShareArea}>{shareButton}</div>              {/* ③ 클래스 확인 */}
+<div className={styles.staticShareArea}>{shareButton}</div>              {/* ③ Check class */}
 <div className={styles.floatingShareArea({ position })}>{shareButton}</div>
 ```
 
 ```typescript
-// EventHeader.css.ts — ④ 같은 버튼들의 가시성이 @media로 '또' 제어된다
+// EventHeader.css.ts — ④ Visibility of the same buttons is 'again' controlled by @media
 export const staticShareArea = style({
-  display: 'none',                       // 모바일: 정적 버튼 숨김
+  display: 'none',                       // Mobile: Static button hidden
   '@media': { [tokens.mediaQuery.desktop]: { display: 'flex' } },
 });
 export const floatingShareArea = recipe({
   base: {
     position: 'fixed',
-    '@media': { [tokens.mediaQuery.desktop]: { display: 'none' } },  // PC: 플로팅 통째로 숨김
+    '@media': { [tokens.mediaQuery.desktop]: { display: 'none' } },  // PC: Floating element entirely hidden
   },
   variants: { position: { bottom: { bottom: 32 }, stackOne: { bottom: 64 }, stackTwo: { bottom: 112 }, hidden: { opacity: 0 } } },
 });
 ```
 
-The visibility of the same share button is **dually controlled by two mechanisms: JS (`isMobile` → position calculation) and CSS (`@media display:none`)**. Answering "Why isn't this button visible on PC?" requires jumping between multiple code sections, despite being a simple question.
+The visibility of the same share button is **dually controlled by two mechanisms: JS (`isMobile` → position calculation) and CSS (`@media display:none`).** Answering "Why isn't this button visible on PC?" requires navigating through multiple code sections, despite being a simple question.
 
-### 3. Allow Duplicate Code — Coupling
+### 3. Allowing Duplicate Code — Coupling
 
-The [original text](https://frontend-fundamentals.com/code-quality/code/examples/use-bottom-sheet.html) shows a commonized hook that is repeated across multiple pages, issuing a warning:
+The [original text](https://frontend-fundamentals.com/code-quality/code/examples/use-bottom-sheet.html) shows a commonized hook that is repeated across multiple pages and issues a warning:
 
 ```typescript
-// 토스 원문 — 공통화된 점검 바텀시트 훅
+// Toss Original — Commonized maintenance bottom sheet hook
 export const useOpenMaintenanceBottomSheet = () => {
   const maintenanceBottomSheet = useMaintenanceBottomSheet();
   const logger = useLogger();
   return async (maintainingInfo: TelecomMaintenanceInfo) => {
-    logger.log("점검 바텀시트 열림");
+    logger.log("Maintenance bottom sheet opened");
     const result = await maintenanceBottomSheet.open(maintainingInfo);
     if (result) {
-      logger.log("점검 바텀시트 알림받기 클릭");
+      logger.log("Maintenance bottom sheet 'receive notifications' clicked");
     }
     closeView();
   };
 };
 ```
 
-> If there's a possibility for behavior to differ per page, allowing duplicate code without commonization is a better choice.
+> If there's a possibility for behavior to differ across pages, allowing duplicate code without commonization is a better choice.
 
-We violated this principle in the opposite direction. We commonized two layouts into one file, reasoning that "PC and mobile are the same screen," but actual requirements are coming in separately.
+We violated this principle in the opposite direction. We commonized two layouts into one file, reasoning that "PC and mobile are the same screen," but actual requests come in separately.
 
 ```typescript
-// 우리 코드 — Before: OrderSkeleton.tsx, isMobile 삼항이 37번
+// Our Code — Before: OrderSkeleton.tsx, 37 ternary operations for isMobile
 export const OrderSkeleton = () => {
   const isMobile = useIsMobile();
   return (
@@ -395,16 +393,16 @@ export const OrderSkeleton = () => {
       {isMobile ? <div className={styles.divider} /> : <Space size={48} />}
       <Skeleton width={160} height={isMobile ? 18 : 22} />
       <Space size={isMobile ? 2 : 4} />
-      {/* …이런 삼항이 파일 전체에 37번 */}
+      {/* …37 such ternary operations throughout the file */}
     </>
   );
 };
 ```
 
-This is the result of trying to contain two completely different skeleton layouts "without duplication" in a single function. Allowing duplication results in each file becoming straightforward code without conditions:
+This is the result of trying to put two completely different skeleton layouts into one function "without duplication." If duplication is allowed, each file becomes straight-line code without conditions:
 
 ```typescript
-// 우리 코드 — After: 레이아웃 중복을 허용하고 두 벌로
+// Our Code — After: Allowing layout duplication and creating two versions
 export const OrderSkeleton = () => (
   <>
     <MobileView><OrderSkeletonMobile /></MobileView>
@@ -417,148 +415,149 @@ function OrderSkeletonMobile() {
       <Skeleton width="100%" height={46} borderRadius={0} />
       <Skeleton width={144} height={32} />
       <div className={styles.divider} />
-      {/* 조건 분기 0개 — 위에서 아래로 그냥 읽힌다 */}
+      {/* 0 conditional branches — reads straight from top to bottom */}
     </>
   );
 }
-// OrderSkeletonDesktop도 동일 — 37개의 삼항이 사라지고 단순한 목록 둘이 남는다
+// OrderSkeletonDesktop is also the same — 37 ternary operations disappear, leaving two simple lists
 ```
 
-The 500+ lines and 26 `@media` files from Chapter 2 tell the same story. It's a structure where modifying the mobile mockup can break the PC version, a state where, as the original text states, "every time common code is modified, dependent code must be individually tested."
+The ~500 lines and 26 `@media` blocks in Chapter 2 tell the same story. It's a structure where modifying a mobile design can break the PC version, a state where, as the original text says, "every time common code is modified, dependent code must be individually tested."
 
-### 4. Expose Hidden Logic — Predictability
+### 4. Revealing Hidden Logic — Predictability
 
-The [original text](https://frontend-fundamentals.com/code-quality/code/examples/hidden-logic.html) uses logging secretly embedded within a balance inquiry function as an example:
+The [original text](https://frontend-fundamentals.com/code-quality/code/examples/hidden-logic.html) gives an example of logging secretly embedded within a balance inquiry function:
 
 ```typescript
-// 토스 원문 — Before
+// Toss Original — Before
 async function fetchBalance(): Promise<number> {
   const balance = await http.get<number>("...");
-  logging.log("balance_fetched");   // 이름·반환 타입으로 예측할 수 없는 숨은 동작
+  logging.log("balance_fetched");   // Hidden behavior not predictable by name or return type
   return balance;
 }
 ```
 
 > Only logic that can be predicted by the function's name, parameters, and return type should remain in the implementation.
 
-In our code, this 'smell' manifests as **hidden device logic within components**. It's not apparent from the name and signature alone, but internally, it hides or disappears itself:
+In our code, this "smell" manifests as **hidden device logic within components.** It's not apparent from the name and signature alone, but it hides or disappears internally:
 
 ```typescript
-// 우리 코드 — Before ①: 이름만 보면 항상 렌더될 것 같은 섹션
+// Our Code — Before ①: A section that appears as if it would always render based on its name
 export const RecentOrdersSection = () => {
   const isMobile = useIsMobile();
   const { data, isLoading } = useQuery(ordersQuery);
   const orders = data?.orders ?? [];
-  // 모바일 + 주문 없음 → 섹션이 통째로 사라진다. 호출부는 알 길이 없다
+  // Mobile + no orders → the entire section disappears. The caller has no way of knowing this
   if (isLoading || (isMobile && !orders.length)) return null;
   return <section>…</section>;
 };
 ```
 
 ```typescript
-// 우리 코드 — Before ②: JSX에는 항상 있는데, 모바일에서는 CSS가 몰래 숨긴다
+// Our Code — Before ②: Always present in JSX, but CSS secretly hides it on mobile
 // SectionTitle.css.ts
 export const title = style({
-  display: 'none', // 기본(모바일): 숨김 — tsx만 읽는 사람은 알 수 없다
+  display: 'none', // Default (mobile): Hidden — someone reading only tsx cannot know
   '@media': { [tokens.mediaQuery.desktop]: { display: 'block' } },
 });
 ```
 
-To the question "Why isn't this title visible on mobile?", the tsx provides no answer — the hidden logic resides in the CSS. The improvement is the same as in the original text: instead of hiding it within the implementation, **expose the hiding mechanism in the name and call site**:
+The `tsx` file cannot answer the question "Why isn't this title visible on mobile?" — the hidden logic is in the CSS. The improvement is the same as in the original text: **reveal the hiding mechanism in the name and call site**, rather than inside the implementation:
 
 ```typescript
-// 우리 코드 — After: 조건은 호출부로, 디바이스 전용임은 래퍼/이름으로
+// Our Code — After: Conditions moved to the call site, device-specific nature indicated by wrapper/name
 {(!isMobile || orders.length > 0) && <RecentOrdersSection orders={orders} />}
 
 <DesktopView>
-  <SectionTitle>Order Details</SectionTitle>  {/* CSS의 몰래 display:none 대신 */}
+  <SectionTitle>Order Details</SectionTitle>  {/* Instead of CSS's secret display:none */}
 </DesktopView>
 ```
 
 ### Summary
 
-I believe clean code remains important because human review is still necessary for AI-generated code. I think it's one of the very important benchmarks for us to establish a single direction.
+I believe clean code remains important because human review is still necessary for AI-generated code.
+It will serve as a crucial benchmark for us to establish a unified direction.
 
-| Criterion     | Principle                      | Our Symptom                                                              |
-| ------------- | ------------------------------ | ------------------------------------------------------------------------ |
-| Readability   | Separate non-co-executing code | `isMobile ? A : B` interleaving in ~370 places — code for two devices mixed in one function |
-| Readability   | Reduce context switching       | `tsx ↔ css.ts ↔ tokens`, round trips across file boundaries are the basic reading path |
-| Coupling      | Allow duplicate code           | Combining two-version layouts from design into one file → ~500 lines / 26 @media blocks |
-| Predictability | Expose hidden logic            | Component hides itself internally based on device conditions             |
+| Criteria       | Principle                           | Our Symptoms                                                              |
+| -------------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| Readability    | Separate code that doesn't run together | `isMobile ? A : B` interleaved in ~370 places — code for two devices mixed in one function |
+| Readability    | Reduce context switching            | `tsx` ↔ `css.ts` ↔ tokens, round trips across file boundaries as a basic comprehension path |
+| Coupling       | Allow duplicate code                | Combining two layouts (from design) into one file → ~500 lines / 26 `@media` blocks |
+| Predictability | Reveal hidden logic                 | Components hiding themselves internally based on device conditions        |
 
 ## How Do Other Popular E-commerce Sites Do It?
 
-Above, we examined the problems in our code using clean code as a criterion. To get hints on how others implement it, I asked fable to research popular e-commerce sites.
+Above, we examined problems in our code using clean code as a benchmark,
+and to get hints on how others implement it, I asked fable to research popular e-commerce sites.
 
 ### 1. Product List Measurements
 
-| Site          | Stack                     | Implementation                                   | Decisive Evidence                                                                                                  |
-| ------------- | ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| 29CM          | React + Tailwind          | 🟢 **Media Query Responsive (Single Class)** ⭐  | `grid grid-cols-3 desktop:grid-cols-5` — Same DOM, same class switches between 3 and 5 columns                     |
-| Ohouse Home   | React SSR + Emotion       | 🟢 CSS Media Query + Local Dual Render           | 171 media rules (768·1024·1256px + 30 hover:hover). Only stats-mobile/stats-pc pairs are toggled                   |
-| Ohouse Store  | Next.js + Emotion         | 🟠 **JS (matchMedia) Branching**                 | Ranking grid: no corresponding rule in 375px iframe, **0 @media rules but viewport responsive** = different tree render |
-| Kurly         | Next.js + Emotion (effectively CSR) | 🔴 **User Agent Adaptive — Fixed PC Width**      | Both 375/1280 iframes have same 3 columns, 249px cards. Main 1050px fixed. The reality of "single URL" is user agent branching |
-| Musinsa       | Next.js + styled-components | 🔴 **User Agent Adaptive (Fluid)**               | Fluid expansion of single mobile layout (min 744/max 1440). Consistent with PC web termination in 2024             |
+| Site        | Stack                       | Implementation                                | Decisive Evidence                                                                                                |
+| ----------- | --------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 29CM        | `React + Tailwind`          | 🟢 **Media Query Responsive (Single Class)** ⭐ | `grid grid-cols-3 desktop:grid-cols-5` — Same DOM, same class, 3 columns ↔ 5 columns                               |
+| Ohouse Home | `React SSR + Emotion`       | 🟢 CSS Media Query + Local Dual Render        | 171 media rules (768, 1024, 1256px + `hover:hover` 30 times). Only `stats-mobile`/`stats-pc` pairs are toggled. |
+| Ohouse Store | `Next.js + Emotion`         | 🟠 **JS (`matchMedia`) Branching**            | Ranking grid: 375px iframe has no relevant rules, **0 `@media` but viewport responsive** = renders different tree |
+| Kurly       | `Next.js + Emotion` (effectively CSR) | 🔴 **User Agent Adaptive — Fixed PC Width**   | Both 375/1280 iframe have identical 3 columns, 249px cards. Main 1050px fixed. "Single URL" is actually user agent branching |
+| Musinsa     | `Next.js + styled-components` | 🔴 **User Agent Adaptive (Fluid)**            | Fluid expansion of a single mobile layout (min 744/max 1440). Consistent with PC web termination in 2024         |
 
-### 2. Home Screen Measurements — Screens with Significantly Different Structures
+### 2. Home Screen Measurements — Screens with Significantly Divergent Structures
 
-While product lists are a lighter case where "only the number of columns changes," the home screen involves a complete split in header, GNB, bottom tab bar, and section composition.
-
-| Site        | Branching Mechanism              | Page Layout                                       | Header·GNB                                                              | Bottom Tab Bar / Partial UI                                      | SSR Status               |
-| ----------- | -------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------ |
-| 29CM        | 🟢 Viewport + CSS Toggle         | Magazine-style 3 columns (PC) ↔ Single Hero (MO)  | Both PC GNB and mobile tab bar exist in DOM — `hidden`/`desktop:flex` symmetrical toggle | Bottom tab bar is `desktop:hidden`, app webview is hidden again with `webview:hidden` | Both versions server-rendered |
-| Ohouse Home | 🟢 CSS Media Query (Single DOM)  | Single DOM rearrangement — 38 main sections are identical | Same header tree rearranged across two widths                           | Horizontal scroll section mobile 4 vs PC 1 — carouselization also with CSS | SSR 322KB, device marker 0 |
-| Kurly       | 🔴 User Agent Adaptive           | Even in 387px viewport, PC (1080px+) is rendered clipped | Only PC version exists                                                  | N/A                                                              | SSR shell 15KB (effectively CSR) |
-| Musinsa     | 🔴 User Agent Adaptive (Fluid)   | DOM effectively identical (2,876 vs 2,880 nodes), only width is fluid (744~1440) | GNB identical — from tracking metadata `pc_gnb`                         | 5 horizontal scroll carousels are identical                      | Device marker exists in SSR |
+| Site        | Branching Mechanism               | Page Layout                                   | Header/GNB                                                | Bottom Tab Bar / Partial UI                                  | SSR Status              |
+| ----------- | --------------------------------- | --------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------ | ----------------------- |
+| 29CM        | 🟢 Viewport + CSS Toggle          | Magazine-style 3 columns (PC) ↔ Single hero (MO) | Both PC GNB and mobile tab bar exist in DOM — `hidden`/`desktop:flex` symmetrical toggle | Bottom tab bar is `desktop:hidden`, app webview is also hidden with `webview:hidden` | Both versions server-rendered |
+| Ohouse Home | 🟢 CSS Media Query (Single DOM)   | Single DOM rearrangement — 38 main sections identical | Same header tree rearranged across two widths             | Horizontal scroll section mobile 4 vs PC 1 — carouselization also with CSS | SSR 322KB, 0 device markers |
+| Kurly       | 🔴 User Agent Adaptive            | PC (1080px+) renders cropped even in 387px viewport | Only one PC version exists                                | N/A                                                          | SSR shell 15KB (effectively CSR) |
+| Musinsa     | 🔴 User Agent Adaptive (Fluid)    | DOM virtually identical (2,876 vs 2,880 nodes), width fluid (744~1440) | GNB identical — `pc_gnb` from tracking metadata           | 5 identical horizontal scroll carousels                      | Device marker exists in SSR |
 
 ### Research Findings
 
-To summarize the research findings in one sentence: **Everyone is doing it differently.** From pure media query responsive (Coupang·29CM) to JS branching (Ohouse Store), user agent adaptive (Kurly·Musinsa), and domain separation (Olive Young Korea), all are actively in use.
+To summarize the research findings in one sentence: **Everyone is doing it differently.** From pure media query responsive (Coupang, 29CM) to JS branching (Ohouse Store), user agent adaptive (Kurly, Musinsa), and domain separation (Olive Young Korea), all are actively in use.
 
-The reason everyone made different choices is likely due to the respective trade-offs, as shown below.
+The reason everyone has made different choices is likely due to the respective trade-offs, as shown below.
 
-| Method                         | Pros                                                                                             | Cons                                                                                                                                                             | Examples                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **① CSS Media Queries** (Single DOM) | SSR-safe (server doesn't need to know device) · zero-runtime · immediate resize response         | Expressive limitations if DOM structure differs significantly · complexity explosion if branching accumulates per selector                                         | Coupang · 29CM · Ohouse Home · Our product list    |
-| **② `display:none` Dual Render** | Branching for different UI structures with CSS only · simple implementation                      | Dual DOM/bundle transfer · SEO duplicate content · significant waste if more than one screen's worth (accessibility is safe with display:none — 5-4)             | 29CM GNB · Ohouse local fragments · Our header/order list |
-| **③ JS Branching** (matchMedia hook) | Only one DOM version rendered · clearly expressed with logic                                     | SSR initial value issue → hydration mismatch or 2-pass render (slow) · flicker/CLS before detection                                                              | Ohouse Store · Our useIsMobile 374 times           |
-| **④ Server User Agent Detection** | Accurate from first render · opposite code not sent (bundle -38.7% real-world example) · hydration safe | No viewport resize response · tablet/new user agent detection risk                                                                                               | Market Kurly · Musinsa                             |
-| **⑤ Component/Route Separation**   | File = mockup 1:1 · parallel work possible · each file is a single layout without @media         | Branching point design required (needs to combine with ④ for SSR to be complete) · risk of dual modification for common logic/copy | Our DesktopHeader/MobileHeader · velog route separation real-world example |
+| Method                        | Advantages                                                                  | Disadvantages                                                                                             | Adoption Cases                                     |
+| ----------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **① CSS Media Queries** (Single DOM) | SSR-safe (server doesn't need to know device) · Zero-runtime · Immediate response to resize | Limited expression if DOM structure differs significantly · Complexity explosion with accumulated branches per selector | Coupang · 29CM · Ohouse Home · Our product list    |
+| **② `display:none` Dual Render** | Branches even structurally different UIs with CSS only · Simple implementation | Dual DOM/bundle transmission · SEO duplicate content · Significant waste if more than one screen's worth (accessibility is safe with `display:none` — 5-4) | 29CM GNB · Ohouse local fragments · Our header/order list |
+| **③ JS Branching** (`matchMedia` hook) | Renders only one DOM · Clearly expressed with logic                         | SSR initial value issue → hydration mismatch or 2-pass render (slow) · Flickering/CLS before determination | Ohouse Store · Our `useIsMobile` 374 times         |
+| **④ Server User Agent Detection** | Accurate from first render · No opposite code transmitted (bundle -38.7% measured case) · Safe hydration | No response to viewport resize · Risk of tablet/new user agent detection                                  | Kurly · Musinsa                                    |
+| **⑤ Component/Route Separation** | File = 1:1 mockup · Parallel work possible · Each file is a single layout without `@media` | Requires branching point design (needs to combine with ④ for full SSR) · Risk of duplicate common logic/copy modifications | Our `DesktopHeader`/`MobileHeader` · Velog route separation measurement |
 
 ## Essential Considerations for Responsive Implementation
 
-To approach how to develop, I felt it was necessary to first understand the problems that inevitably arise regardless of the chosen method. So, I investigated at least these points first.
+To approach how to develop, I felt it was necessary to first understand the problems that inevitably arise regardless of the chosen method, to make an informed decision. So, I investigated at least these points first.
 
 ### 1. Bundle Size
 
-Media query and dual render methods mean mobile users download all PC code (and vice versa).
+Media query and dual-render methods mean mobile users download all PC code (and vice-versa).
 
-Here's an important distinction. Server user agent "detection" alone does not reduce bundle size. Our app already uses user agents (for app webview detection, bot detection to choose SSR streaming strategy), but none of these are linked to the bundle. Bundle composition is determined by the static import graph at build time, so even if the server knows the device, the bundle size won't decrease unless "which JS to send" is branched. Detection + serving separation (route separation or dynamic import) must be combined to reduce it.
+Here's an important distinction: merely "detecting" the server user agent does not reduce the bundle size. Our app already uses user agents (for app webview detection, bot detection to select SSR streaming strategy), but none of this is linked to the bundle. Bundle composition is determined by the static import graph at build time, so even if the server knows the device, the bundle size remains the same unless "which JS to send" is differentiated. Detection combined with serving separation (route separation or dynamic import) is required to reduce it.
 
 ### 2. SEO
 
 -   Google uses mobile-first indexing — the mobile DOM must be the complete version of the content.
--   `display:none` dual render creates duplicate content. While crawlers read hidden content, if the management of the two versions diverges, it becomes ambiguous which one is the canonical version.
--   Since user agents provide different HTML to Googlebot user agents (mobile/desktop versions), caching management is required to avoid being misunderstood as cloaking.
+-   `display:none` dual rendering creates duplicate content. While crawlers read hidden content, if the management of the two versions diverges, it becomes ambiguous which one is the canonical version.
+-   User agent detection can serve different HTML to Googlebot user agents (mobile/desktop versions), requiring careful caching management to avoid being mistaken for cloaking.
 
 ### 3. Hydration Mismatch
 
-This is inevitably encountered when using JS branching (③) in SSR. Since the server doesn't know the device, it fixes the initial value (we use `desktop`), and if it differs from the client's determination, React will report a mismatch. A 2-pass render (`isHydrated` gate) that safely bypasses this, however, incurs **flicker and CLS**. Our footer is precisely paying this cost:
+This is an inevitable issue when using JS branching (③) in SSR. Since the server doesn't know the device, it fixes an initial value (we use `desktop`), and if this differs from the client's determination, React throws a mismatch. A safe workaround, 2-pass rendering (`isHydrated` gate), incurs the cost of **flickering and CLS** instead. Our footer is precisely paying this cost:
 
 ```typescript
-// 푸터 앱 다운로드 섹션 — hydration 후에야 등장 → 늦은 팝인, CLS
+// Footer app download section — appears only after hydration → late pop-in, CLS
 {isHydrated && platform !== 'APP' && (
   <>
-    <div className={styles.appBannerDesktop}>…QR코드…</div>
-    <div className={styles.appBannerMobile}>…스토어 배지…</div>
+    <div className={styles.appBannerDesktop}>…QR code…</div>
+    <div className={styles.appBannerMobile}>…store badge…</div>
   </>
 )}
 ```
 
 ## Future Plans
 
-Developing two versions (PC/mobile) within the same repository, rather than just simple responsive development, was new to me, and I've had many concerns since joining the company. While it deviates significantly from my usual clean code practices, I lacked the experience to know the correct answer, making it difficult to assert my views easily.
+Developing two versions (PC/mobile) within the same repository, rather than simple responsive development, was a first for me, leading to many concerns since I joined. While it deviates significantly from my usual clean code practices, I lacked the experience to know the correct answer, making it difficult to assert a strong opinion.
 
-Therefore, in this post, I've established a benchmark by analyzing our approach from a clean code perspective and how others are doing it. Now that we've launched and have a bit more breathing room, I'm actively submitting proposals to my team members, hoping we can resolve this issue.
+Therefore, in this post, I analyzed the situation from a clean code perspective and how others are doing it to establish a benchmark.
 
-Once we reach a conclusion, I'll provide another update..!
+Now that we've launched and have a bit more breathing room, I'm actively submitting proposals to my teammates, hoping we can resolve this issue.
+Once a conclusion is reached, I'll provide another update..!
