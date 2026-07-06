@@ -65,10 +65,11 @@ export const siteConfig = {
       en: ["AI-native development", "Web auth & security"],
     },
   },
+  /** Giscus 설정 — 어차피 브라우저에 노출되는 공개 식별자라 코드에 직접 관리 */
   giscus: {
-    repo: import.meta.env.VITE_GISCUS_REPO as `${string}/${string}`,
-    repoId: import.meta.env.VITE_GISCUS_REPO_ID as string,
-    category: (import.meta.env.VITE_GISCUS_CATEGORY as string) || "Announcements",
-    categoryId: import.meta.env.VITE_GISCUS_CATEGORY_ID as string,
+    repo: "realstone2/jindol-blog" as `${string}/${string}`,
+    repoId: "R_kgDOQWx3vA",
+    category: "General",
+    categoryId: "DIC_kwDOQWx3vM4Cx2b_",
   },
 };
