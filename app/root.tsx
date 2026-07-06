@@ -13,6 +13,12 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+
+export const links: Route.LinksFunction = () => [
+  { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+  { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
+  { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+];
 import { Nav } from "~/components/nav";
 import { Footer } from "~/components/footer";
 import { siteConfig } from "~/config/site";
