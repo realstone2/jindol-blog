@@ -8,6 +8,7 @@ import { formatDate } from "~/lib/format";
 import { siteConfig } from "~/config/site";
 import { ReadingProgress } from "~/components/reading-progress";
 import { Comments } from "~/components/comments";
+import { MermaidDiagrams } from "~/components/mermaid-diagrams";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const lang = langFromParam(params.lang);
@@ -163,6 +164,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
           className="prose"
           dangerouslySetInnerHTML={{ __html: html }}
         />
+        <MermaidDiagrams deps={post.slug} />
 
         {post.metadata.tags.length > 0 && (
           <div className="mt-10 mb-11 flex flex-wrap gap-2">

@@ -239,3 +239,37 @@ body {
   font-weight: 700;
   color: var(--color-ink);
 }
+
+/* mermaid 다이어그램 — 렌더 전에는 자리만 잡고, SVG로 채워지면 카드로 보인다 */
+.prose .mermaid-block {
+  margin: 0 0 26px;
+  min-height: 120px;
+}
+
+.prose .mermaid-block[data-state="done"] {
+  background: var(--color-page-alt);
+  border: 1px solid var(--color-line-soft);
+  border-radius: 12px;
+  padding: 22px 26px;
+  min-height: 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.prose .mermaid-block[data-state="done"] svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 렌더 실패 · JS 미동작 시 노출되는 원본 소스 */
+.prose .mermaid-block pre {
+  background: var(--color-code-bg);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--color-code-text);
+}
