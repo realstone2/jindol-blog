@@ -2,30 +2,40 @@
  * Gemini API를 사용한 자동 번역 유틸리티
  */
 
-// .env.local 파일 로드
-import { config } from "dotenv";
-import { existsSync } from "fs";
-import { join } from "path";
-
-const envPath = join(process.cwd(), ".env.local");
-if (existsSync(envPath)) {
-  config({ path: envPath });
-}
+// .env.local / .env 로드 (반드시 첫 번째 import)
+import "./load-env";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createHash } from "crypto";
+import { join } from "path";
 import { readFile, writeFile } from "fs/promises";
 
-// Gemini API 초기화
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+/**
+ * Gemini 클라이언트 (지연 초기화)
+ *
+ * 모듈 로드 시점에 키를 읽으면 호출하는 쪽의 import 순서에 따라
+ * .env 주입보다 먼저 평가될 수 있어, 실제 사용 시점에 읽는다.
+ */
+let genAIInstance: GoogleGenerativeAI | null | undefined;
 
-if (!GEMINI_API_KEY) {
-  console.warn(
-    "⚠️  GEMINI_API_KEY가 설정되지 않아 번역 기능이 비활성화됩니다."
-  );
+function getGenAI(): GoogleGenerativeAI | null {
+  if (genAIInstance !== undefined) {
+    return genAIInstance;
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    console.warn(
+      "⚠️  GEMINI_API_KEY가 설정되지 않아 번역 기능이 비활성화됩니다."
+    );
+    genAIInstance = null;
+    return genAIInstance;
+  }
+
+  genAIInstance = new GoogleGenerativeAI(apiKey);
+  return genAIInstance;
 }
-
-const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 /**
  * 번역 캐시 타입
@@ -130,6 +140,8 @@ export async function translateToEnglish(
   content: string,
   retries: number = 5 // 재시도 횟수 증가
 ): Promise<string | null> {
+  const genAI = getGenAI();
+
   if (!genAI) {
     console.error("❌ Gemini API가 초기화되지 않았습니다.");
     return null;

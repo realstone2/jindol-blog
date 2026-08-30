@@ -7,17 +7,12 @@
  * 예:   pnpm sync-one 394f4343-7bda-8159-9b8b-c1f00948d90b
  */
 
-import { config } from "dotenv";
-import { existsSync } from "fs";
-import { join } from "path";
-
-for (const file of [".env.local", ".env"]) {
-  const envPath = join(process.cwd(), file);
-  if (existsSync(envPath)) config({ path: envPath });
-}
+// .env.local / .env 로드 (반드시 첫 번째 import)
+import "./load-env";
 
 import { Client } from "@notionhq/client";
 import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 import {
   extractMetadata,
   generateFrontmatter,

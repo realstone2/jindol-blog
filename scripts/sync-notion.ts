@@ -8,18 +8,12 @@
  * - 수동 실행: pnpm sync-notion
  */
 
-// .env.local 파일 로드
-import { config } from "dotenv";
-import { existsSync } from "fs";
-import { join } from "path";
-
-const envPath = join(process.cwd(), ".env.local");
-if (existsSync(envPath)) {
-  config({ path: envPath });
-}
+// .env.local / .env 로드 (반드시 첫 번째 import)
+import "./load-env";
 
 import { Client } from "@notionhq/client";
 import { writeFile, mkdir, readdir } from "fs/promises";
+import { join } from "path";
 import {
   extractMetadata,
   generateFrontmatter,

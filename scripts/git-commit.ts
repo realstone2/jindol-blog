@@ -8,17 +8,11 @@
  * - 워크플로우에서: 자동 실행
  */
 
-// .env.local 파일 로드
-import { config } from "dotenv";
-import { existsSync } from "fs";
-import { join } from "path";
-
-const envPath = join(process.cwd(), ".env.local");
-if (existsSync(envPath)) {
-  config({ path: envPath });
-}
+// .env.local / .env 로드 (반드시 첫 번째 import)
+import "./load-env";
 
 import { execSync } from "child_process";
+import { join } from "path";
 
 /**
  * Git 커밋 및 푸시
